@@ -3,6 +3,10 @@
 
 #include <array>
 #include <bitset>
+#include <mutex>
+#include <thread>
+#include <chrono>
+#include <vector>
 
 using Register = unsigned int;
 using Byte = unsigned char;
@@ -12,33 +16,64 @@ using Instruction = unsigned int;
 
 static constexpr auto CODE_BANK = 0;
 static constexpr auto MMIO_BANK = 1;
+static constexpr auto IT_BANK = 1;
 static constexpr auto N_BANKS = 4;
 static constexpr auto BANK_SIZE = 64 * 1024;
 
+static constexpr auto IT_ADDR = 0x7d00;
+
 static constexpr Byte NOP_CODE{0x00};
 static constexpr Byte ADD_CODE{0x01};
-static constexpr Byte SETB_CODE{0x08};
+static constexpr Byte INC_CODE{0x06};
+static constexpr Byte SET_CODE{0x08};
 static constexpr Byte CLR_CODE{0x0A};
+
 static constexpr Byte LD_CODE{0x41};
 static constexpr Byte ST_CODE{0x42};
+
 static constexpr Byte JMP_CODE{0x82};
-static constexpr Byte SB_CODE{0xB2};
-static constexpr Byte HLT_CODE{0xBF};
+static constexpr Byte RETI_CODE{0x87};
+
+static constexpr Byte DAI_CODE{0xC0};
+static constexpr Byte EAI_CODE{0xC1};
+static constexpr Byte DTI_CODE{0xC2};
+static constexpr Byte ETI_CODE{0xC3};
+static constexpr Byte SELB_CODE{0xC4};
+static constexpr Byte HLT_CODE{0xFF};
+
+using namespace std::chrono_literals;
 
 class Micro16 {
 public:
     class Adapter {
     public:
         virtual void connect_to_memory(Byte* memory_start) = 0;
+        virtual void disconnect() = 0;
+    };
+
+    class TimerInterruptHandler {
+    public:
+        static constexpr std::array<std::chrono::milliseconds, 2> TIMER_SLEEP = {50ms, 500ms};
+
+        TimerInterruptHandler(Micro16& mcu, int timer_id);
+        ~TimerInterruptHandler();
+        static void runner(TimerInterruptHandler* self);
+
+    private:
+        Micro16& mcu;
+        int timer_id;
+        std::thread thread;
     };
 public:
     Micro16(std::array<Byte, BANK_SIZE> const& code);
+
     void run();
     void register_mmio(Adapter& adapter, Address request_addr);
 
 private:
     Instruction instruction_fetch() const;
     void run_instruction(Instruction const& instruction);
+    void check_interrupts();
 
 private:
     bool running;
@@ -49,6 +84,13 @@ private:
     std::array<Register, 4> W;
 
     std::array<std::array<Byte, BANK_SIZE>, N_BANKS> memory_banks;
+
+    std::mutex timer_mutex;
+    bool timer_triggered;
+    TimerInterruptHandler timer0;
+    TimerInterruptHandler timer1;
+
+    std::vector<Adapter*> adapters;
 };
 
 #endif //MICRO16_MICRO16_H
