@@ -83,10 +83,22 @@ void Micro16::run_instruction(Instruction const& instruction)
         auto cc = (instruction_data & 0b00110000) >> 4;
 
         this->W[cc] = this->W[aa] + this->W[bb];
+    } else if (instruction_code == SUB_CODE) {
+        // TODO
+    } else if (instruction_code == AND_CODE) {
+        // TODO
+    } else if (instruction_code == OR_CODE) {
+        // TODO
+    } else if (instruction_code == XOR_CODE) {
+        // TODO
     } else if (instruction_code == INC_CODE) {
         auto aa = (instruction_data & 0b00000011) >> 0;
 
         W[aa] += 1;
+    } else if (instruction_code == DEC_CODE) {
+        auto aa = (instruction_data & 0b00000011) >> 0;
+
+        W[aa] -= 1;
     } else if (instruction_code == SET_CODE) {
         auto aa = (instruction_data & 0b11000000) >> 6;
         auto yy = (instruction_data & 0b00110000) >> 4;
@@ -102,6 +114,24 @@ void Micro16::run_instruction(Instruction const& instruction)
         auto aa = (instruction_data & 0b00000011) >> 0;
 
         this->IP = W[aa];
+        IP_changed = true;
+    } else if (instruction_code == BRE_CODE) {
+        // TODO
+    } else if (instruction_code == BRNE_CODE) {
+        // TODO
+    } else if (instruction_code == BRL_CODE) {
+        // TODO
+    } else if (instruction_code == BRH_CODE) {
+        // TODO
+    } else if (instruction_code == CALL_CODE) {
+        // TODO
+    } else if (instruction_code == RET_CODE) {
+        auto stack_bank = (this->CR & 0x3000) >> 12;
+        auto raw_data_ptr = &(this->memory_banks[stack_bank][this->SP]);
+
+        this->IP = (*(raw_data_ptr + 0) << 8) + (*(raw_data_ptr + 1) << 0);
+        this->SP = this->SP - 2;
+
         IP_changed = true;
     } else if (instruction_code == RETI_CODE) {
         auto stack_bank = (this->CR & 0x3000) >> 12;
@@ -127,6 +157,12 @@ void Micro16::run_instruction(Instruction const& instruction)
 
         this->memory_banks[selected_bank][this->W[aa]] = (this->W[bb] & 0xff00) >> 8;
         this->memory_banks[selected_bank][this->W[aa] + 1] = (this->W[bb] & 0x00ff) >> 0;
+    } else if (instruction_code == MV_CODE) {
+        // TODO
+    } else if (instruction_code == PUSH_CODE) {
+        // TODO
+    } else if (instruction_code == POP_CODE) {
+        // TODO
     } else if (instruction_code == DAI_CODE) {
         this->CR &= ~(0x0008);
     } else if (instruction_code == EAI_CODE) {

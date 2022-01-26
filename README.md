@@ -151,7 +151,7 @@ IP = *SP
 SP = SP + 2
 ```
 
-- #### RETI `1000 0111 0000 0001`
+- #### RETI `1000 1000 0000 0001`
 
 Same as `RET`, but also sets the `GLE` flag on the `CR` register.
 
@@ -178,7 +178,7 @@ SP = SP - 2
 *SP = W[aa]
 ```
 
-- #### POP `0100 1000 0000 00aa`
+- #### POP `0100 1001 0000 00aa`
 
 Pop a value from top of the stack on register `W[aa]`:
 
@@ -188,7 +188,7 @@ SP = SP + 2
 ```
 
 
-### Control operations
+### Control instructions
 
 - #### DAI `1100 0000 0000 0000`
 
