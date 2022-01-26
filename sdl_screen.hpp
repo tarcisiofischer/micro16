@@ -23,16 +23,18 @@ static const std::unordered_map<std::bitset<4>, ColorHex> bits_to_color = {
 
 class SDLScreen : public Micro16::Adapter {
 public:
-    static auto constexpr WIDTH = 400;
-    static auto constexpr HEIGHT = 320;
+    static auto constexpr WIDTH = 320;
+    static auto constexpr HEIGHT = 200;
 
     SDLScreen();
     ~SDLScreen();
 
     static void update_window(SDLScreen* self);
     void connect_to_memory(Byte* memory_start) override;
+    void disconnect() override;
 
 private:
+    bool connected;
     SDL_Window* window;
     std::thread update_window_thread;
     Byte* video_memory_ptr;

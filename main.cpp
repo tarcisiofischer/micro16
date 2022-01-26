@@ -15,8 +15,11 @@ int main()
         JMP_CODE, 0b00000011
     };
 
-    SDLScreen monitor{};
+    led_blink_code[addr++] = RETI_CODE;  led_blink_code[addr++] = 0b00000000;
+    auto& code = led_blink_code;
+
     Micro16 mcu{code};
+    SDLScreen monitor{};
     mcu.register_mmio(monitor, Address{0x0000});
     mcu.run();
 

@@ -4,7 +4,7 @@ Micro16::Micro16(std::array<Byte, BANK_SIZE> const& code)
     : running(true)
     , IP(0x0000)
     , CR(0x9000)
-    , SP(0x3000)
+    , SP(0x8000)
     , W({0x0000, 0x0000, 0x0000, 0x0000})
 {
     memory_banks[0] = code;
@@ -18,6 +18,10 @@ void Micro16::run()
         if (!this->running) {
             break;
         }
+    }
+
+    for (auto adapter : this->adapters) {
+        adapter->disconnect();
     }
 }
 
@@ -33,6 +37,7 @@ void Micro16::register_mmio(Adapter& adapter, Address request_addr)
 {
     auto* mem_addr = &this->memory_banks[MMIO_BANK][request_addr];
     adapter.connect_to_memory(mem_addr);
+    this->adapters.push_back(&adapter);
 }
 
 void Micro16::run_instruction(Instruction const& instruction)
