@@ -30,8 +30,8 @@ void SDLScreen::update_window(SDLScreen* self)
         for (int i = 0; i < HEIGHT; ++i) {
             for (int j = 0; j < WIDTH / 2; ++j) {
                 auto mem_data = self->video_memory_ptr[WIDTH / 2 * i + j];
-                ptr[WIDTH * i + 2 * j + 0] = bits_to_color.at((mem_data & 0x00ff) >> 0);
-                ptr[WIDTH * i + 2 * j + 1] = bits_to_color.at((mem_data & 0xff00) >> 4);
+                ptr[WIDTH * i + 2 * j + 0] = bits_to_color.at((mem_data & 0x0f) >> 0);
+                ptr[WIDTH * i + 2 * j + 1] = bits_to_color.at((mem_data & 0xf0) >> 4);
             }
         }
         SDL_UnlockSurface(surface);

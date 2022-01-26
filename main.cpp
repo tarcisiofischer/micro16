@@ -2,19 +2,8 @@
 #include <micro16.hpp>
 #include <sdl_screen.hpp>
 
-int main()
+std::array<Byte, BANK_SIZE> led_blink_code()
 {
-//    auto code = std::array<Byte, BANK_SIZE>{
-//        SELB_CODE, 0b00000001,
-//        SET_CODE, 0b01001111,
-//        SET_CODE, 0b01101111,
-//        SET_CODE, 0b00001111,
-//        SET_CODE, 0b00101111,
-//        ST_CODE, 0b00000100,
-//        SET_CODE, 0b11001010,
-//        JMP_CODE, 0b00000011
-//    };
-
     auto led_blink_code = std::array<Byte, BANK_SIZE>{
             // BEGIN Setup IT
             // Select Bank 1 (where IT is)
@@ -47,18 +36,47 @@ int main()
     led_blink_code[addr++] = SET_CODE;   led_blink_code[addr++] = 0b11100000;
     led_blink_code[addr++] = SET_CODE;   led_blink_code[addr++] = 0b11010000;
     led_blink_code[addr++] = SET_CODE;   led_blink_code[addr++] = 0b11000000;
-
     // W[2] = *led_ptr
     led_blink_code[addr++] = LD_CODE;    led_blink_code[addr++] = 0b00001110;
-
     // W[2] += 1
     led_blink_code[addr++] = INC_CODE;   led_blink_code[addr++] = 0b00000010;
-
     // *led_ptr = W[0]
     led_blink_code[addr++] = ST_CODE;    led_blink_code[addr++] = 0b00001110;
-
     led_blink_code[addr++] = RETI_CODE;  led_blink_code[addr++] = 0b00000000;
-    auto& code = led_blink_code;
+    return led_blink_code;
+}
+
+std::array<Byte, BANK_SIZE> draw_line_code()
+{
+    auto draw_line_code = std::array<Byte, BANK_SIZE>{
+            // Select video memory bank
+/*0x00*/    SELB_CODE, 0b00000001,
+            // W[1] = 0xFFFF
+/*0x02*/    SET_CODE, 0b01111111,
+/*0x04*/    SET_CODE, 0b01101111,
+/*0x06*/    SET_CODE, 0b01011111,
+/*0x08*/    SET_CODE, 0b01001111,
+            // W[0] = 0x0F0F
+/*0x0A*/    SET_CODE, 0b00110000,
+/*0x0C*/    SET_CODE, 0b00100000,
+/*0x0E*/    SET_CODE, 0b00010000,
+/*0x10*/    SET_CODE, 0b00000000,
+            // Draw line on screen
+/*0x12*/    ST_CODE, 0b00000001,
+            // Busy loop (Do nothing)
+/*0x14*/    SET_CODE, 0b11110000,
+/*0x16*/    SET_CODE, 0b11100000,
+/*0x18*/    SET_CODE, 0b11010001,
+/*0x1A*/    SET_CODE, 0b11001100,
+/*0x1C*/    JMP_CODE, 0b00000011
+    };
+
+    return draw_line_code;
+}
+
+int main()
+{
+    auto code = led_blink_code();
 
     Micro16 mcu{code};
     SDLScreen monitor{};
