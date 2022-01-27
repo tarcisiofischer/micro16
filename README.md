@@ -45,11 +45,11 @@ Memory bank `01`
 
 | Address           | Purpose
 |---                |---
-| 0x0000 - 0x7d00   | Video memory
-| 0x7d00 - 0x7e00   | Interrupt table
-| 0x7e00 - 0x7f00   | Input information (e.g. Keyboard data)
-| 0x7f00 - 0x8000   | Reserved
-| 0x8000 - 0xFFFF   | Default stack region
+| 0x0000 - 0x7cff   | Video memory
+| 0x7d00 - 0x7dff   | Interrupt table
+| 0x7e00 - 0x7eff   | Input information (e.g. Keyboard data)
+| 0x7f00 - 0x7fff   | Reserved
+| 0x8000 - 0xffff   | Default stack region
 
 Memory banks `10` and `11` are General Purpose memory
 
@@ -112,6 +112,11 @@ The bits are selected with `yy`:
 
 Clear register `W[aa]`
 
+- #### NOT `0000 1011 0000 00aa`
+
+`W[aa] = ~W[aa]`
+Bitwise NOT operation on register `W[aa]`.
+
 ## Branch instructions
 
 - #### JMP `1000 0000 0000 00aa`
@@ -134,6 +139,10 @@ If `W[aa] < W[bb]`, then set `IP = W[cc]`.
 
 If `W[aa] > W[bb]`, then set `IP = W[cc]`.
 
+- #### BRNZ `1000 1001 0000 ccaa`
+
+If `W[aa] != 0`, then set `IP = W[cc]`.
+
 - #### CALL `1000 0110 0000 00aa`
 
 Performs a function call:
@@ -151,7 +160,7 @@ IP = *SP
 SP = SP + 2
 ```
 
-- #### RETI `1000 1000 0000 0001`
+- #### RETI `1000 1000 0000 0000`
 
 Same as `RET`, but also sets the `GLE` flag on the `CR` register.
 
@@ -220,8 +229,8 @@ Interrupt table:
 
 | Interrupt  | Address
 |---         |---
-| Timer 0    | 0x1000
-| Timer 1    | 0x1004
+| Timer 0    | 0x7d00
+| Timer 1    | 0x7d04
 
 ### Time
 
@@ -266,7 +275,7 @@ The color map is given:
 | <span style="background-color: #5b69ac; color: black">&nbsp;0110&nbsp;</span>         | <span style="background-color: #1f7d6e; color: black">&nbsp;1110&nbsp;</span>
 | <span style="background-color: #acadc8; color: black">&nbsp;0111&nbsp;</span>         | <span style="background-color: #87ccc8; color: black">&nbsp;1111&nbsp;</span>
 
-Each pixel is mapped in memory bank 1 from 0x0000-0x7d00.
+Each pixel is mapped in memory bank 1 from 0x0000-0x7cff.
 
 - #### Disk
 

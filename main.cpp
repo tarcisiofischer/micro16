@@ -24,25 +24,35 @@ std::array<Byte, BANK_SIZE> led_blink_code()
 /*0x10*/    EAI_CODE, 0b00000000,
 
             // Busy wait
-/*0x12*/    SET_CODE, 0b00110000,
-/*0x14*/    SET_CODE, 0b00100000,
-/*0x16*/    SET_CODE, 0b00010001,
-/*0x18*/    SET_CODE, 0b00001010,
-/*0x1A*/    JMP_CODE, 0b00000000,
+/*0x12*/    SET_CODE, 0b11110000, // 0
+/*0x14*/    SET_CODE, 0b11100000, // 0
+/*0x16*/    SET_CODE, 0b11010001, // 1
+/*0x18*/    SET_CODE, 0b11001010, // A
+/*0x1A*/    JMP_CODE, 0b00000011,
     };
+
     auto addr = 0x1000;
-    // W[3] = led_ptr
-    led_blink_code[addr++] = SET_CODE;   led_blink_code[addr++] = 0b11110111;
-    led_blink_code[addr++] = SET_CODE;   led_blink_code[addr++] = 0b11100000;
-    led_blink_code[addr++] = SET_CODE;   led_blink_code[addr++] = 0b11010000;
-    led_blink_code[addr++] = SET_CODE;   led_blink_code[addr++] = 0b11000000;
-    // W[2] = *led_ptr
-    led_blink_code[addr++] = LD_CODE;    led_blink_code[addr++] = 0b00001110;
-    // W[2] += 1
-    led_blink_code[addr++] = INC_CODE;   led_blink_code[addr++] = 0b00000010;
-    // *led_ptr = W[0]
-    led_blink_code[addr++] = ST_CODE;    led_blink_code[addr++] = 0b00001110;
-    led_blink_code[addr++] = RETI_CODE;  led_blink_code[addr++] = 0b00000000;
+                // W[1] = 0x1010
+/* 0x1000 */    led_blink_code[addr++] = SET_CODE;   led_blink_code[addr++] = 0b01110001;
+/* 0x1002 */    led_blink_code[addr++] = SET_CODE;   led_blink_code[addr++] = 0b01100000;
+/* 0x1004 */    led_blink_code[addr++] = SET_CODE;   led_blink_code[addr++] = 0b01010001;
+/* 0x1006 */    led_blink_code[addr++] = SET_CODE;   led_blink_code[addr++] = 0b01000000;
+                // W[0] = led_ptr
+/* 0x1008 */    led_blink_code[addr++] = SET_CODE;   led_blink_code[addr++] = 0b00110111;
+/* 0x100A */    led_blink_code[addr++] = SET_CODE;   led_blink_code[addr++] = 0b00101100;
+/* 0x100C */    led_blink_code[addr++] = SET_CODE;   led_blink_code[addr++] = 0b00011111;
+/* 0x100E */    led_blink_code[addr++] = SET_CODE;   led_blink_code[addr++] = 0b00001110;
+                // W[2] = *led_ptr
+/* 0x1010 */    led_blink_code[addr++] = LD_CODE;    led_blink_code[addr++] = 0b00000010;
+                // W[2] = ~W[2]
+/* 0x1012 */    led_blink_code[addr++] = NOT_CODE;   led_blink_code[addr++] = 0b00000010;
+                // *led_ptr = W[0]
+/* 0x1014 */    led_blink_code[addr++] = ST_CODE;    led_blink_code[addr++] = 0b00000010;
+/* 0x1016 */    led_blink_code[addr++] = DEC_CODE;   led_blink_code[addr++] = 0b00000000;
+/* 0x1016 */    led_blink_code[addr++] = DEC_CODE;   led_blink_code[addr++] = 0b00000000;
+/* 0x1018 */    led_blink_code[addr++] = BRNZ_CODE;  led_blink_code[addr++] = 0b00000100;
+/* 0x101A */    led_blink_code[addr++] = RETI_CODE;  led_blink_code[addr++] = 0b00000000;
+
     return led_blink_code;
 }
 

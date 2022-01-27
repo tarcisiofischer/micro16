@@ -33,6 +33,7 @@ static constexpr Byte INC_CODE{0x06};
 static constexpr Byte DEC_CODE{0x07};
 static constexpr Byte SET_CODE{0x08};
 static constexpr Byte CLR_CODE{0x0A};
+static constexpr Byte NOT_CODE{0x0B};
 
 // Branch instructions
 static constexpr Byte JMP_CODE{0x80};
@@ -43,6 +44,7 @@ static constexpr Byte BRH_CODE{0x85};
 static constexpr Byte CALL_CODE{0x86};
 static constexpr Byte RET_CODE{0x87};
 static constexpr Byte RETI_CODE{0x88};
+static constexpr Byte BRNZ_CODE{0x89};
 
 // Memory instructions
 static constexpr Byte LD_CODE{0x41};

@@ -110,6 +110,10 @@ void Micro16::run_instruction(Instruction const& instruction)
         auto aa = (instruction_data & 0b00000011) >> 0;
 
         W[aa] = 0;
+    } else if (instruction_code == NOT_CODE) {
+        auto aa = (instruction_data & 0b00000011) >> 0;
+
+        W[aa] = ~W[aa];
     } else if (instruction_code == JMP_CODE) {
         auto aa = (instruction_data & 0b00000011) >> 0;
 
@@ -125,6 +129,14 @@ void Micro16::run_instruction(Instruction const& instruction)
         // TODO
     } else if (instruction_code == CALL_CODE) {
         // TODO
+    } else if (instruction_code == BRNZ_CODE) {
+        auto aa = (instruction_data & 0b00000011) >> 0;
+        auto cc = (instruction_data & 0b00001100) >> 2;
+
+        if (W[aa] != 0) {
+            this->IP = W[cc];
+            IP_changed = true;
+        }
     } else if (instruction_code == RET_CODE) {
         auto stack_bank = (this->CR & 0x3000) >> 12;
         auto raw_data_ptr = &(this->memory_banks[stack_bank][this->SP]);
