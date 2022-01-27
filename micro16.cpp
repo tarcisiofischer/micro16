@@ -7,6 +7,7 @@ Micro16::Micro16(std::array<Byte, BANK_SIZE> const& code)
     , SP(0x8000)
     , W({0x0000, 0x0000, 0x0000, 0x0000})
     , timer_triggered{false}
+    , triggered_timer_id{-1}
     , timer0{*this, 0}
     , timer1{*this, 1}
 {
@@ -44,13 +45,13 @@ void Micro16::check_interrupts()
         this->memory_banks[stack_bank][this->SP + 1] = (this->IP & 0x00ff) >> 0;
 
         // Jump to the address given in the IT
-        // TODO: Make it work with any timer
-        auto timer_id = 1;
+        auto timer_id = this->triggered_timer_id;
         auto jmp_addr_raw_ptr = &(this->memory_banks[IT_BANK][IT_ADDR + 4 * timer_id]);
         auto jmp_addr = (*(jmp_addr_raw_ptr + 0) << 8) + (*(jmp_addr_raw_ptr + 1) << 0);
         this->IP = jmp_addr;
 
         this->timer_triggered = false;
+        this->triggered_timer_id = -1;
     }
 }
 
@@ -228,6 +229,7 @@ void Micro16::TimerInterruptHandler::runner(Micro16::TimerInterruptHandler* self
                 mcu.CR & (1 << (8 + timer_id))
             ) {
                 mcu.timer_triggered = true;
+                mcu.triggered_timer_id = self->timer_id;
             }
 
             if (!mcu.running) {

@@ -107,6 +107,7 @@ private:
 
     std::mutex timer_mutex;
     bool timer_triggered;
+    int triggered_timer_id;
     TimerInterruptHandler timer0;
     TimerInterruptHandler timer1;
 
