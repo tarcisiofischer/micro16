@@ -1,5 +1,7 @@
 # Micro16
 
+[![CMake](https://github.com/tarcisiofischer/micro16/actions/workflows/cmake.yml/badge.svg)](https://github.com/tarcisiofischer/micro16/actions/workflows/cmake.yml)
+
 Yet another 16bit computer emulator for a computer that doesn't exist.
 
 
