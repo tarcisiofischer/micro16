@@ -70,6 +70,25 @@ void Micro16::register_mmio(Adapter& adapter, Address request_addr)
     this->adapters.push_back(&adapter);
 }
 
+void Micro16::set_breakpoint_handler(std::function<void()> const& handler)
+{
+    this->breakpoint_handler = handler;
+}
+
+Micro16::InternalState Micro16::get_state() const
+{
+    return {
+        this->running,
+        this->IP,
+        this->CR,
+        this->SP,
+        this->W[0],
+        this->W[1],
+        this->W[2],
+        this->W[3]
+    };
+}
+
 void Micro16::run_instruction(Instruction const& instruction)
 {
     auto instruction_code = static_cast<Byte>((instruction & 0xff00) >> 8);
@@ -85,56 +104,109 @@ void Micro16::run_instruction(Instruction const& instruction)
 
         this->W[cc] = this->W[aa] + this->W[bb];
     } else if (instruction_code == SUB_CODE) {
-        // TODO
+        auto aa = (instruction_data & 0b00001100) >> 2;
+        auto bb = (instruction_data & 0b00000011) >> 0;
+        auto cc = (instruction_data & 0b00110000) >> 4;
+
+        this->W[cc] = this->W[aa] - this->W[bb];
     } else if (instruction_code == AND_CODE) {
-        // TODO
+        auto aa = (instruction_data & 0b00001100) >> 2;
+        auto bb = (instruction_data & 0b00000011) >> 0;
+        auto cc = (instruction_data & 0b00110000) >> 4;
+
+        this->W[cc] = this->W[aa] & this->W[bb];
     } else if (instruction_code == OR_CODE) {
-        // TODO
+        auto aa = (instruction_data & 0b00001100) >> 2;
+        auto bb = (instruction_data & 0b00000011) >> 0;
+        auto cc = (instruction_data & 0b00110000) >> 4;
+
+        this->W[cc] = this->W[aa] | this->W[bb];
     } else if (instruction_code == XOR_CODE) {
-        // TODO
+        auto aa = (instruction_data & 0b00001100) >> 2;
+        auto bb = (instruction_data & 0b00000011) >> 0;
+        auto cc = (instruction_data & 0b00110000) >> 4;
+
+        this->W[cc] = this->W[aa] ^ this->W[bb];
     } else if (instruction_code == INC_CODE) {
         auto aa = (instruction_data & 0b00000011) >> 0;
 
-        W[aa] += 1;
+        this->W[aa] += 1;
     } else if (instruction_code == DEC_CODE) {
         auto aa = (instruction_data & 0b00000011) >> 0;
 
-        W[aa] -= 1;
+        this->W[aa] -= 1;
     } else if (instruction_code == SET_CODE) {
         auto aa = (instruction_data & 0b11000000) >> 6;
         auto yy = (instruction_data & 0b00110000) >> 4;
         auto xxxx = (instruction_data & 0b00001111) >> 0;
 
-        W[aa] &= ~(0x000F << (4 * yy));
-        W[aa] |= xxxx << (4 * yy);
+        this->W[aa] &= ~(0x000F << (4 * yy));
+        this->W[aa] |= xxxx << (4 * yy);
     } else if (instruction_code == CLR_CODE) {
         auto aa = (instruction_data & 0b00000011) >> 0;
 
-        W[aa] = 0;
+        this->W[aa] = 0;
     } else if (instruction_code == NOT_CODE) {
         auto aa = (instruction_data & 0b00000011) >> 0;
 
-        W[aa] = ~W[aa];
+        this->W[aa] = ~this->W[aa];
     } else if (instruction_code == JMP_CODE) {
         auto aa = (instruction_data & 0b00000011) >> 0;
 
-        this->IP = W[aa];
+        this->IP = this->W[aa];
         IP_changed = true;
     } else if (instruction_code == BRE_CODE) {
-        // TODO
+        auto aa = (instruction_data & 0b00001100) >> 2;
+        auto bb = (instruction_data & 0b00000011) >> 0;
+        auto cc = (instruction_data & 0b00110000) >> 4;
+
+        if (this->W[aa] == this->W[bb]) {
+            this->IP = this->W[cc];
+            IP_changed = true;
+        }
     } else if (instruction_code == BRNE_CODE) {
-        // TODO
+        auto aa = (instruction_data & 0b00001100) >> 2;
+        auto bb = (instruction_data & 0b00000011) >> 0;
+        auto cc = (instruction_data & 0b00110000) >> 4;
+
+        if (this->W[aa] != this->W[bb]) {
+            this->IP = this->W[cc];
+            IP_changed = true;
+        }
     } else if (instruction_code == BRL_CODE) {
-        // TODO
+        auto aa = (instruction_data & 0b00001100) >> 2;
+        auto bb = (instruction_data & 0b00000011) >> 0;
+        auto cc = (instruction_data & 0b00110000) >> 4;
+
+        if (this->W[aa] < this->W[bb]) {
+            this->IP = W[cc];
+            IP_changed = true;
+        }
     } else if (instruction_code == BRH_CODE) {
-        // TODO
+        auto aa = (instruction_data & 0b00001100) >> 2;
+        auto bb = (instruction_data & 0b00000011) >> 0;
+        auto cc = (instruction_data & 0b00110000) >> 4;
+
+        if (this->W[aa] > this->W[bb]) {
+            this->IP = W[cc];
+            IP_changed = true;
+        }
     } else if (instruction_code == CALL_CODE) {
-        // TODO
+        auto stack_bank = (this->CR & 0x3000) >> 12;
+        auto aa = (instruction_data & 0b00000011) >> 0;
+
+        this->SP = this->SP + 2;
+        auto next_instruction = this->IP + 2;
+        this->memory_banks[stack_bank][this->SP] = (next_instruction & 0xff00) >> 8;
+        this->memory_banks[stack_bank][this->SP + 1] = (next_instruction & 0x00ff) >> 0;
+        this->IP = this->W[aa];
+
+        IP_changed = true;
     } else if (instruction_code == BRNZ_CODE) {
         auto aa = (instruction_data & 0b00000011) >> 0;
         auto cc = (instruction_data & 0b00001100) >> 2;
 
-        if (W[aa] != 0) {
+        if (this->W[aa] != 0) {
             this->IP = W[cc];
             IP_changed = true;
         }
@@ -152,7 +224,6 @@ void Micro16::run_instruction(Instruction const& instruction)
 
         this->IP = (*(raw_data_ptr + 0) << 8) + (*(raw_data_ptr + 1) << 0);
         this->SP = this->SP - 2;
-        // Reenable interrupts
         this->CR |= 0x0008;
 
         IP_changed = true;
@@ -170,12 +241,32 @@ void Micro16::run_instruction(Instruction const& instruction)
 
         this->memory_banks[selected_bank][this->W[aa]] = (this->W[bb] & 0xff00) >> 8;
         this->memory_banks[selected_bank][this->W[aa] + 1] = (this->W[bb] & 0x00ff) >> 0;
-    } else if (instruction_code == MV_CODE) {
-        // TODO
+    } else if (instruction_code == CPY_CODE) {
+        auto aa = (instruction_data & 0b00001100) >> 2;
+        auto bb = (instruction_data & 0b00000011) >> 0;
+
+        this->W[bb] = this->W[aa];
     } else if (instruction_code == PUSH_CODE) {
-        // TODO
+        auto stack_bank = (this->CR & 0x3000) >> 12;
+        auto aa = (instruction_data & 0b00000011) >> 0;
+
+        this->SP = this->SP + 2;
+        this->memory_banks[stack_bank][this->SP] = (this->W[aa] & 0xff00) >> 8;
+        this->memory_banks[stack_bank][this->SP + 1] = (this->W[aa] & 0x00ff) >> 0;
     } else if (instruction_code == POP_CODE) {
-        // TODO
+        auto stack_bank = (this->CR & 0x3000) >> 12;
+        auto raw_data_ptr = &(this->memory_banks[stack_bank][this->SP]);
+        auto aa = (instruction_data & 0b00000011) >> 0;
+
+        this->W[aa] = (*(raw_data_ptr + 0) << 8) + (*(raw_data_ptr + 1) << 0);
+        this->SP = this->SP - 2;
+    } else if (instruction_code == PEEK_CODE) {
+        auto stack_bank = (this->CR & 0x3000) >> 12;
+        auto raw_data_ptr = &(this->memory_banks[stack_bank][this->SP]);
+        auto aa = (instruction_data & 0b11000000) >> 6;
+        auto xx = (instruction_data & 0b00111111) >> 0;
+
+        this->W[aa] = (*(raw_data_ptr + xx) << 8) + (*(raw_data_ptr + xx + 1) << 0);
     } else if (instruction_code == DAI_CODE) {
         this->CR &= ~(0x0008);
     } else if (instruction_code == EAI_CODE) {
@@ -188,6 +279,15 @@ void Micro16::run_instruction(Instruction const& instruction)
         auto a = (instruction_data & 0b00000001) >> 0;
 
         this->CR |= (0x0100 << a);
+    } else if (instruction_code == SELB_CODE) {
+        auto aa = (instruction_data & 0b00000011) >> 0;
+
+        this->CR &= 0xcfff;
+        this->CR |= (aa << 12);
+    } else if (instruction_code == BRK_CODE) {
+        if (this->breakpoint_handler) {
+            this->breakpoint_handler();
+        }
     } else if (instruction_code == HLT_CODE) {
         this->running = false;
     }
@@ -198,6 +298,15 @@ void Micro16::run_instruction(Instruction const& instruction)
     if (this->IP >= BANK_SIZE) {
         this->IP = 0;
     }
+
+    // Assert all registers are 16bit
+    for (int i = 0; i < 4; ++i) {
+        this->W[i] &= 0x0000ffff;
+    }
+    this->IP &= 0x0000ffff;
+    this->CR &= 0x0000ffff;
+    this->SP &= 0x0000ffff;
+
 }
 
 Micro16::TimerInterruptHandler::TimerInterruptHandler(Micro16& mcu, int timer_id)

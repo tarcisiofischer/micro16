@@ -149,7 +149,7 @@ If `W[aa] != 0`, then set `IP = W[cc]`.
 
 Performs a function call:
 ```
-SP = SP - 2
+SP = SP + 2
 *SP = IP
 IP = W[aa]
 ```
@@ -159,7 +159,7 @@ IP = W[aa]
 Returns from a function call
 ```
 IP = *SP
-SP = SP + 2
+SP = SP - 2
 ```
 
 - #### RETI `1000 1000 0000 0000`
@@ -176,16 +176,16 @@ Load contents of memory address given by `W[aa]`, on the bank selected on `BK` i
 
 Store the contents of `W[bb]` in address given by `W[aa]`, on the bank selected on `BK`.
 
-- #### MV `0100 0011 0000 aabb`
+- #### CPY `0100 0011 0000 aabb`
 
-Move the contents of register `W[aa]` to the register `W[bb]`.
+Copy the contents of register `W[aa]` to the register `W[bb]`.
 
 - #### PUSH `0100 1000 0000 00aa`
 
 Push the contents of register `W[aa]` on the stack:
 
 ```
-SP = SP - 2
+SP = SP + 2
 *SP = W[aa]
 ```
 
@@ -195,9 +195,16 @@ Pop a value from top of the stack on register `W[aa]`:
 
 ```
 W[aa] = *SP
-SP = SP + 2
+SP = SP - 2
 ```
 
+- #### PEEK `0100 1010 aaxx xxxx`
+
+Load the value from address `SP - 0bxxxxxx` into `W[aa]`:
+
+```
+W[aa] = *(SP - xxxxxx)
+```
 
 ### Control instructions
 
@@ -220,6 +227,10 @@ Enable time interrupt `a`
 - #### SELB `1100 0100 0000 00aa`
 
 Select Memory Bank `aa` in `CR` register
+
+- #### BRK `1111 1110 0000 0000`
+
+Breakpoint (software handled) - Mostly used for testing.
 
 - #### HLT `1111 1111 0000 0000`
 

@@ -7,6 +7,7 @@
 #include <thread>
 #include <chrono>
 #include <vector>
+#include <functional>
 
 using Register = unsigned int;
 using Byte = unsigned char;
@@ -49,9 +50,10 @@ static constexpr Byte BRNZ_CODE{0x89};
 // Memory instructions
 static constexpr Byte LD_CODE{0x41};
 static constexpr Byte ST_CODE{0x42};
-static constexpr Byte MV_CODE{0x43};
+static constexpr Byte CPY_CODE{0x43};
 static constexpr Byte PUSH_CODE{0x48};
 static constexpr Byte POP_CODE{0x49};
+static constexpr Byte PEEK_CODE{0x4a};
 
 // Control instructions
 static constexpr Byte DAI_CODE{0xC0};
@@ -59,6 +61,7 @@ static constexpr Byte EAI_CODE{0xC1};
 static constexpr Byte DTI_CODE{0xC2};
 static constexpr Byte ETI_CODE{0xC3};
 static constexpr Byte SELB_CODE{0xC4};
+static constexpr Byte BRK_CODE{0xFE};
 static constexpr Byte HLT_CODE{0xFF};
 
 using namespace std::chrono_literals;
@@ -84,11 +87,37 @@ public:
         int timer_id;
         std::thread thread;
     };
+
+    struct InternalState {
+        bool running;
+        Register IP;
+        Register CR;
+        Register SP;
+        Register W0;
+        Register W1;
+        Register W2;
+        Register W3;
+
+        inline bool operator==(InternalState const& other) const {
+            return (
+                this->running == other.running &&
+                this->IP == other.IP &&
+                this->CR == other.CR &&
+                this->SP == other.SP &&
+                this->W0 == other.W0 &&
+                this->W1 == other.W1 &&
+                this->W2 == other.W2 &&
+                this->W3 == other.W3
+            );
+        }
+    };
 public:
     Micro16(std::array<Byte, BANK_SIZE> const& code);
 
     void run();
     void register_mmio(Adapter& adapter, Address request_addr);
+    void set_breakpoint_handler(std::function<void()> const& handler);
+    InternalState get_state() const;
 
 private:
     Instruction instruction_fetch() const;
@@ -112,6 +141,7 @@ private:
     TimerInterruptHandler timer1;
 
     std::vector<Adapter*> adapters;
+    std::function<void()> breakpoint_handler;
 };
 
 #endif //MICRO16_MICRO16_H
