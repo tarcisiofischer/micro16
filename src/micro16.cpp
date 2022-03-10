@@ -1,17 +1,25 @@
 #include <micro16.hpp>
+#include <sstream>
 
 Micro16::Micro16(std::array<Byte, BANK_SIZE> const& code)
-    : running(true)
-    , IP(0x0000)
-    , CR(0x9000)
-    , SP(0x8000)
-    , W({0x0000, 0x0000, 0x0000, 0x0000})
-    , timer_triggered{false}
-    , triggered_timer_id{-1}
-    , timer0{*this, 0}
-    , timer1{*this, 1}
+        : running(true)
+        , IP(0x0000)
+        , CR(0x9000)
+        , SP(0x8000)
+        , W({0x0000, 0x0000, 0x0000, 0x0000})
+        , timer_triggered{false}
+        , triggered_timer_id{-1}
+        , timer0{*this, 0}
+        , timer1{*this, 1}
 {
     memory_banks[0] = code;
+}
+
+Micro16::~Micro16()
+{
+    for (auto adapter : this->adapters) {
+        adapter->disconnect();
+    }
 }
 
 void Micro16::run()
@@ -23,10 +31,6 @@ void Micro16::run()
         if (!this->running) {
             break;
         }
-    }
-
-    for (auto adapter : this->adapters) {
-        adapter->disconnect();
     }
 }
 
@@ -290,6 +294,10 @@ void Micro16::run_instruction(Instruction const& instruction)
         }
     } else if (instruction_code == HLT_CODE) {
         this->running = false;
+    } else {
+        std::stringstream ss;
+        ss << "Unknown instruction code " << std::hex << int(instruction_code);
+        throw std::runtime_error(ss.str());
     }
 
     if (!IP_changed) {

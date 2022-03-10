@@ -113,6 +113,7 @@ public:
     };
 public:
     Micro16(std::array<Byte, BANK_SIZE> const& code);
+    ~Micro16();
 
     void run();
     void register_mmio(Adapter& adapter, Address request_addr);

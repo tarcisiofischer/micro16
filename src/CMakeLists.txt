@@ -5,6 +5,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 set(MICRO16_APPLICATION_FILES
+    reader.cpp
+    reader.hpp
     main.cpp
 )
 
