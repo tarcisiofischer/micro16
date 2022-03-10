@@ -20,6 +20,7 @@ Micro16::~Micro16()
     for (auto adapter : this->adapters) {
         adapter->disconnect();
     }
+    this->running = false;
 }
 
 void Micro16::run()
@@ -326,9 +327,7 @@ Micro16::TimerInterruptHandler::TimerInterruptHandler(Micro16& mcu, int timer_id
 
 Micro16::TimerInterruptHandler::~TimerInterruptHandler()
 {
-    if (!this->mcu.running) {
-        this->thread.join();
-    }
+    this->thread.join();
 }
 
 void Micro16::TimerInterruptHandler::runner(Micro16::TimerInterruptHandler* self)
