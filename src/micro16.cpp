@@ -17,9 +17,7 @@ Micro16::Micro16(std::array<Byte, BANK_SIZE> const& code)
 
 Micro16::~Micro16()
 {
-    for (auto adapter : this->adapters) {
-        adapter->disconnect();
-    }
+    this->disconnect_adapters();
     this->running = false;
 }
 
@@ -30,6 +28,7 @@ void Micro16::run()
         auto instruction = this->instruction_fetch();
         this->run_instruction(instruction);
         if (!this->running) {
+            this->disconnect_adapters();
             break;
         }
     }
@@ -57,6 +56,15 @@ void Micro16::check_interrupts()
 
         this->timer_triggered = false;
         this->triggered_timer_id = -1;
+    }
+}
+
+void Micro16::disconnect_adapters()
+{
+    for (auto adapter : this->adapters) {
+        if (adapter->is_connected()) {
+            adapter->disconnect();
+        }
     }
 }
 
@@ -92,6 +100,11 @@ Micro16::InternalState Micro16::get_state() const
         this->W[2],
         this->W[3]
     };
+}
+
+void Micro16::force_halt()
+{
+    this->running = false;
 }
 
 void Micro16::run_instruction(Instruction const& instruction)
