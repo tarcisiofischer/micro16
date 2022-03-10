@@ -7,6 +7,7 @@
 #include <thread>
 #include <array>
 #include <unordered_map>
+#include <functional>
 
 using ColorHex = unsigned int;
 
@@ -29,15 +30,17 @@ public:
     SDLScreen();
     ~SDLScreen();
 
-    static void update_window(SDLScreen* self);
     void connect_to_memory(Byte* memory_start) override;
     void disconnect() override;
+    bool is_connected() const override;
+    void update();
+    void register_on_window_close_callback(std::function<void()> const& callback);
 
 private:
-    bool connected;
     SDL_Window* window;
-    std::thread update_window_thread;
     Byte* video_memory_ptr;
+    std::mutex video_memory_ptr_mutex;
+    std::function<void()> on_window_close;
 };
 
 #endif //MICRO16_SDL_SCREEN_HPP

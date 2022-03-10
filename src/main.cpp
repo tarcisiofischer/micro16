@@ -20,8 +20,19 @@ int main(int argc, char** argv)
     auto input_file = arg_parser.get<std::string>("input_file");
     Micro16 mcu{read_code_from_file(input_file)};
     SDLScreen monitor{};
+
     mcu.register_mmio(monitor, Address{0x0000});
-    mcu.run();
+    monitor.register_on_window_close_callback([&mcu]() {
+        mcu.force_halt();
+    });
+    auto mcu_runner = std::thread{[&mcu]() {
+        mcu.run();
+    }};
+
+    while (monitor.is_connected()) {
+        monitor.update();
+    }
+    mcu_runner.join();
 
     return 0;
 }

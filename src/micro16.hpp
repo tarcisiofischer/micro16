@@ -71,6 +71,7 @@ public:
     class Adapter {
     public:
         virtual void connect_to_memory(Byte* memory_start) = 0;
+        virtual bool is_connected() const = 0;
         virtual void disconnect() = 0;
     };
 
@@ -119,11 +120,13 @@ public:
     void register_mmio(Adapter& adapter, Address request_addr);
     void set_breakpoint_handler(std::function<void()> const& handler);
     InternalState get_state() const;
+    void force_halt();
 
 private:
     Instruction instruction_fetch() const;
     void run_instruction(Instruction const& instruction);
     void check_interrupts();
+    void disconnect_adapters();
 
 private:
     bool running;
