@@ -1,5 +1,6 @@
 find_package(SDL2 REQUIRED)
 find_package(Threads REQUIRED)
+include(CTest)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -41,6 +42,7 @@ add_executable(micro16
 add_executable(micro16_tests
     ${MICRO16_TEST_FILES}
 )
+add_test(NAME micro16_tests COMMAND micro16_tests)
 
 target_link_libraries(micro16_core
     PRIVATE
