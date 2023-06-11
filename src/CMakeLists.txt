@@ -18,6 +18,12 @@ set(MICRO16_CORE_FILES
     micro16.hpp
 )
 
+set(MICRO16_ASSEMBLER_FILES
+    assembler/lexer.hpp
+    assembler/lexer.cpp
+    assembler/main.cpp
+)
+
 set(MICRO16_TEST_FILES
     tests/catch.hpp
     tests/catch_extensions.hpp
@@ -58,4 +64,8 @@ target_link_libraries(micro16
 target_link_libraries(micro16_tests
     PUBLIC
         micro16_core
+)
+
+add_executable(micro16_asm
+    ${MICRO16_ASSEMBLER_FILES}
 )
