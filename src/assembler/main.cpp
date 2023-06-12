@@ -1,5 +1,6 @@
 #include <argparse.hpp>
 #include <assembler/lexer.hpp>
+#include <assembler/parser.hpp>
 
 int main(int argc, char** argv)
 {
@@ -21,8 +22,12 @@ int main(int argc, char** argv)
     auto output_file = arg_parser.get<std::string>("output_file");
 
     auto tokens = Lexer::tokens_from_file(input_file);
-    for (auto&& t : tokens) {
-        std::cout << static_cast<int>(t.type) << " : " << t.data << " (" << t.line << ", " << t.col << ")\n";
+    // There's no "syntax tree", just a list of instructions
+    try {
+        auto instructions = Parser::generate_instruction_list(tokens);
+    } catch (const std::runtime_error& err) {
+        std::cerr << err.what() << std::endl;
+        return -1;
     }
 
     return 0;

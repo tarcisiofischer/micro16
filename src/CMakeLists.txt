@@ -21,6 +21,8 @@ set(MICRO16_CORE_FILES
 set(MICRO16_ASSEMBLER_FILES
     assembler/lexer.hpp
     assembler/lexer.cpp
+    assembler/parser.hpp
+    assembler/parser.cpp
     assembler/main.cpp
 )
 
