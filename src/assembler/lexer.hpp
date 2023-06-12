@@ -12,6 +12,19 @@ enum class TokenType {
     ENDLINE
 };
 
+inline std::string token_type_as_str(TokenType t)
+{
+    switch(t) {
+        case TokenType::IDENTIFIER:
+            return "IDENTIFIER";
+        case TokenType::INTEGER:
+            return "INTEGER";
+        case TokenType::ENDLINE:
+            return "ENDLINE";
+    }
+    return "<?>";
+}
+
 struct Token {
     int line;
     int col;
@@ -28,6 +41,7 @@ private:
     std::vector<Token> generate_tokens();
     void identifier(std::string &identifier_data);
     void number(std::string &identifier_data);
+    void comment();
     char peek_next();
     char next();
 

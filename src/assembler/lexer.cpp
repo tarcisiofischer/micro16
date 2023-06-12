@@ -71,6 +71,8 @@ std::vector<Token> Lexer::generate_tokens()
         } else if (is_digit(c)) {
             auto identifier_data = std::string{c};
             this->number(identifier_data);
+        } else if (c == '/') {
+            this->comment();
         } else {
             throw std::runtime_error("Unexpected '" + std::string{c} + "' at line " + std::to_string(this->line));
         }
@@ -107,6 +109,31 @@ void Lexer::number(std::string &identifier_data)
         }
     }
     this->tokens.push_back(Token{this->line, this->startcol, TokenType::INTEGER, identifier_data});
+}
+
+void Lexer::comment()
+{
+    auto c = this->next();
+    if (c == '/') {
+        // Single line comment
+        while (!is_linebreak(this->next())) {
+            continue;
+        }
+    } else if (c == '*') {
+        // Comment block
+        c = this->next();
+        while (!(c == '*' && this->peek_next() == '/')) {
+            c = this->next();
+            if (is_linebreak(c)) {
+                this->line += 1;
+                this->col = 0;
+            }
+            continue;
+        }
+        (void) this->next(); // consume last '/'
+    } else {
+        throw std::runtime_error("Unexpected '" + std::string{c} + "' at line " + std::to_string(this->line) + " (Was expecting a comment)");
+    }
 }
 
 char Lexer::peek_next()
