@@ -60,17 +60,21 @@ std::vector<Token> Lexer::generate_tokens()
         if (c == EOF) {
             break;
         } else if (is_whitespace(c)) {
-            continue;
+            if (c == ' ') {
+                this->col += 1;
+            } else if (c == '\t') {
+                this->col += 4;
+            }
         } else if (is_linebreak(c)) {
             this->tokens.push_back(Token{this->line, this->startcol, TokenType::ENDLINE});
             this->line += 1;
-            this->col = 0;
+            this->col = 1;
         } else if (is_alpha(c)) {
-            auto identifier_data = std::string{c};
-            this->identifier(identifier_data);
+            auto data = std::string{c};
+            this->identifier(data);
         } else if (is_digit(c)) {
-            auto identifier_data = std::string{c};
-            this->number(identifier_data);
+            auto data = std::string{c};
+            this->number(data);
         } else if (c == '/') {
             this->comment();
         } else {
@@ -80,35 +84,37 @@ std::vector<Token> Lexer::generate_tokens()
     return this->tokens;
 }
 
-void Lexer::identifier(std::string &identifier_data)
+void Lexer::identifier(std::string &data)
 {
     while (is_alpha_numeric(this->peek_next())) {
-        identifier_data += this->next();
+        data += this->next();
     }
-    this->tokens.push_back(Token{this->line, this->startcol, TokenType::IDENTIFIER, identifier_data});
+    this->tokens.push_back(Token{this->line, this->startcol, TokenType::IDENTIFIER, data});
 }
 
-void Lexer::number(std::string &identifier_data)
+void Lexer::number(std::string &data)
 {
-    if (identifier_data[0] == '0') {
+    if (data[0] == '0') {
         if (this->peek_next() == 'x') {
             // Hex
+            data += this->next(); // consume 'x'
             while (is_hex_digit(this->peek_next())) {
-                identifier_data += this->next();
+                data += this->next();
             }
         } else if (this->peek_next() == 'b') {
             // Binary
+            data += this->next(); // consume 'b'
             while (is_binary_digit(this->peek_next())) {
-                identifier_data += this->next();
+                data += this->next();
             }
         } else {
             // Decimal
             while (is_digit(this->peek_next())) {
-                identifier_data += this->next();
+                data += this->next();
             }
         }
     }
-    this->tokens.push_back(Token{this->line, this->startcol, TokenType::INTEGER, identifier_data});
+    this->tokens.push_back(Token{this->line, this->startcol, TokenType::INTEGER, data});
 }
 
 void Lexer::comment()

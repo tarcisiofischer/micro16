@@ -49,7 +49,7 @@ private:
     std::vector<Token> tokens;
     int line = 1;
     int startcol = 1;
-    int col = 0;
+    int col = 1;
 };
 
 #endif
