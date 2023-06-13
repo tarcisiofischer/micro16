@@ -4,6 +4,14 @@
 #include <assembler/lexer.hpp>
 #include <vector>
 
+class ParserError : public std::runtime_error {
+public:
+    explicit ParserError(std::string const& msg, Token token) : std::runtime_error(msg), token(token)
+    {}
+
+    Token token;
+};
+
 using Instruction = uint16_t;
 class Parser {
 public:
