@@ -2,6 +2,7 @@
 #define MICRO16_PARSER_HPP
 
 #include <assembler/lexer.hpp>
+#include <micro16.hpp>
 #include <string>
 #include <map>
 
@@ -13,7 +14,6 @@ public:
     Token token;
 };
 
-using Instruction = uint16_t;
 using Position = unsigned long long;
 class Parser {
 public:

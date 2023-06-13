@@ -1,4 +1,5 @@
 #include <argparse.hpp>
+#include <micro16.hpp>
 #include <assembler/lexer.hpp>
 #include <assembler/parser.hpp>
 #include <bitset>
@@ -27,29 +28,28 @@ int main(int argc, char** argv)
         try {
             return Parser::generate_instruction_list(tokens);
         } catch (ParserError const& err) {
-            std::cout << "In file " << output_file << ":\n";
-            std::cout << "|  " << err.what() << "\n";
+            std::cerr << "In file " << output_file << ":\n";
+            std::cerr << "|  " << err.what() << "\n";
             auto f = std::ifstream(input_file);
             auto s = std::string{};
             for (int i = 1; i <= err.token.line; i++) {
                 std::getline(f, s);
             }
-            std::cout << "|  " << err.token.line << ": " << s << "\n";
-            std::cout << "|  ";
+            std::cerr << "|  " << err.token.line << ": " << s << "\n";
+            std::cerr << "|  ";
             for (int i = 0; i < err.token.col; ++i) {
-                std::cout << ".";
+                std::cerr << ".";
             }
-            std::cout << "^\n";
+            std::cerr << "^\n";
         }
         return {};
     }();
-    for (auto&& [pos, i] : instructions) {
-        std::cout << std::hex << pos << ": " << std::bitset<16>(i) << "\n";
+    if (instructions.empty()) {
+        std::cerr << "Could not generate code.\n";
+        return -1;
     }
 
-    using Byte = char;
-    static constexpr auto BANK_SIZE = 64 * 1024;
-    auto memory = std::array<Byte, BANK_SIZE>{};
+    auto memory = std::array<char, BANK_SIZE>{};
     for (auto&& [pos, i] : instructions) {
         memory[pos + 0] = (i & 0xff00) >> 8;
         memory[pos + 1] = (i & 0x00ff) >> 0;
