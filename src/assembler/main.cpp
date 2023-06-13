@@ -23,8 +23,7 @@ int main(int argc, char** argv)
     auto output_file = arg_parser.get<std::string>("output_file");
 
     auto tokens = Lexer::tokens_from_file(input_file);
-    // There's no "syntax tree", just a list of instructions
-    auto instructions = [&]() -> std::vector<Instruction> {
+    auto instructions = [&]() -> decltype(Parser::generate_instruction_list(tokens)) {
         try {
             return Parser::generate_instruction_list(tokens);
         } catch (ParserError const& err) {
@@ -44,8 +43,8 @@ int main(int argc, char** argv)
         }
         return {};
     }();
-    for (auto&& i : instructions) {
-        std::cout << std::bitset<16>(i) << "\n";
+    for (auto&& [pos, i] : instructions) {
+        std::cout << std::hex << pos << ": " << std::bitset<16>(i) << "\n";
     }
 
     return 0;

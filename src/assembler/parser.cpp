@@ -82,28 +82,33 @@ Instruction unary_instruction(Instruction base, std::vector<Token>::const_iterat
     return base | (aa << 0);
 }
 
-std::vector<Instruction> Parser::generate_instruction_list(std::vector<Token> const& tokens)
+std::map<Position, Instruction> Parser::generate_instruction_list(std::vector<Token> const& tokens)
 {
-    auto instructions = std::vector<Instruction>{};
+    auto pos = Position{0x0000};
+    auto instructions = std::map<Position, Instruction>{};
+    auto add_instruction = [&instructions, &pos](Instruction const& i) {
+        instructions[pos] = i;
+        pos += 2;
+    };
     auto t = tokens.cbegin();
     while(t != tokens.cend()) {
         if (t->type == TokenType::IDENTIFIER) {
             if (t->data == "NOP") {
-                instructions.push_back(0b00000000);
+                add_instruction(0b00000000);
             } else if (t->data == "ADD") {
-                instructions.push_back(arithmetic_instruction(0x0100, t));
+                add_instruction(arithmetic_instruction(0x0100, t));
             } else if (t->data == "SUB") {
-                instructions.push_back(arithmetic_instruction(0x0200, t));
+                add_instruction(arithmetic_instruction(0x0200, t));
             } else if (t->data == "AND") {
-                instructions.push_back(arithmetic_instruction(0x0300, t));
+                add_instruction(arithmetic_instruction(0x0300, t));
             } else if (t->data == "OR") {
-                instructions.push_back(arithmetic_instruction(0x0400, t));
+                add_instruction(arithmetic_instruction(0x0400, t));
             } else if (t->data == "XOR") {
-                instructions.push_back(arithmetic_instruction(0x0500, t));
+                add_instruction(arithmetic_instruction(0x0500, t));
             } else if (t->data == "INC") {
-                instructions.push_back(unary_instruction(0x0600, t));
+                add_instruction(unary_instruction(0x0600, t));
             } else if (t->data == "DEC") {
-                instructions.push_back(unary_instruction(0x0700, t));
+                add_instruction(unary_instruction(0x0700, t));
             } else if (t->data == "SET") {
                 t = std::next(t);
                 auto aa = extract_register(*t);
@@ -112,22 +117,22 @@ std::vector<Instruction> Parser::generate_instruction_list(std::vector<Token> co
                 t = std::next(t);
                 auto xxxx = extract_int(*t, 4);
                 auto instruction = 0b0000100000000000 | (aa << 6) | (yy << 4) | (xxxx << 0);
-                instructions.push_back(instruction);
+                add_instruction(instruction);
             } else if (t->data == "CLR") {
                 t = std::next(t);
                 auto aa = extract_int(*t, 2);
                 auto instruction = 0b0000101000000000 | (aa << 0);
-                instructions.push_back(instruction);
+                add_instruction(instruction);
             } else if (t->data == "NOT") {
                 t = std::next(t);
-                auto aa = extract_int(*t, 2);
+                auto aa = extract_register(*t);
                 auto instruction = 0b0000101100000000 | (aa << 0);
-                instructions.push_back(instruction);
+                add_instruction(instruction);
             } else if (t->data == "JMP") {
                 t = std::next(t);
                 auto aa = extract_register(*t);
                 auto instruction = 0b1000000000000000 | (aa << 0);
-                instructions.push_back(instruction);
+                add_instruction(instruction);
             } else if (t->data == "BRE") {
                 t = std::next(t);
                 auto cc = extract_int(*t, 2);
@@ -136,7 +141,7 @@ std::vector<Instruction> Parser::generate_instruction_list(std::vector<Token> co
                 t = std::next(t);
                 auto bb = extract_int(*t, 2);
                 auto instruction = 0b1000001000000000 | (cc << 4) | (aa << 2) | (bb << 0);
-                instructions.push_back(instruction);
+                add_instruction(instruction);
             } else if (t->data == "BRNE") {
                 not_implemented(*t);
             } else if (t->data == "BRL") {
@@ -144,27 +149,32 @@ std::vector<Instruction> Parser::generate_instruction_list(std::vector<Token> co
             } else if (t->data == "BRH") {
                 not_implemented(*t);
             } else if (t->data == "BRNZ") {
-                not_implemented(*t);
+                t = std::next(t);
+                auto cc = extract_register(*t);
+                t = std::next(t);
+                auto aa = extract_register(*t);
+                auto instruction = 0b1000100100000000 | (cc << 2) | (aa << 0);
+                add_instruction(instruction);
             } else if (t->data == "CALL") {
                 not_implemented(*t);
             } else if (t->data == "RET") {
-                not_implemented(*t);
+                add_instruction(0b1000011100000000);
             } else if (t->data == "RETI") {
-                not_implemented(*t);
+                add_instruction(0b1000100000000000);
             } else if (t->data == "LD") {
                 t = std::next(t);
                 auto aa = extract_register(*t);
                 t = std::next(t);
                 auto bb = extract_register(*t);
                 auto instruction = 0b0100000100000000 | (aa << 2) | (bb << 0);
-                instructions.push_back(instruction);
+                add_instruction(instruction);
             } else if (t->data == "ST") {
                 t = std::next(t);
                 auto aa = extract_register(*t);
                 t = std::next(t);
                 auto bb = extract_register(*t);
                 auto instruction = 0b0100001000000000 | (aa << 2) | (bb << 0);
-                instructions.push_back(instruction);
+                add_instruction(instruction);
             } else if (t->data == "CPY") {
                 not_implemented(*t);
             } else if (t->data == "PUSH") {
@@ -176,28 +186,32 @@ std::vector<Instruction> Parser::generate_instruction_list(std::vector<Token> co
             } else if (t->data == "DAI") {
                 not_implemented(*t);
             } else if (t->data == "EAI") {
-                instructions.push_back(0b1100000100000000);
+                add_instruction(0b1100000100000000);
             } else if (t->data == "DTI") {
                 not_implemented(*t);
             } else if (t->data == "ETI") {
                 t = std::next(t);
                 auto a = extract_int(*t, 1);
                 auto instruction = 0b1100001100000000 | (a << 0);
-                instructions.push_back(instruction);
+                add_instruction(instruction);
             } else if (t->data == "SELB") {
                 t = std::next(t);
                 auto aa = extract_int(*t, 2);
                 auto instruction = 0b1100010000000000 | (aa << 0);
-                instructions.push_back(instruction);
+                add_instruction(instruction);
             } else if (t->data == "BRK") {
                 not_implemented(*t);
             } else if (t->data == "HLT") {
-                instructions.push_back(0b1111111100000000);
+                add_instruction(0b1111111100000000);
             } else {
                 unknown_instruction(*t);
             }
         } else if (t->type == TokenType::ENDLINE) {
             /* Ignore empty lines */
+        } else if (t->type == TokenType::SECTION) {
+            t = std::next(t);
+            auto section_pos = extract_int(*t, 16);
+            pos = section_pos;
         } else {
             unexpected_token(*t, TokenType::IDENTIFIER);
         }

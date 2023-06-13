@@ -9,7 +9,8 @@
 enum class TokenType {
     IDENTIFIER,
     INTEGER,
-    ENDLINE
+    ENDLINE,
+    SECTION,
 };
 
 inline std::string token_type_as_str(TokenType t)
@@ -21,6 +22,8 @@ inline std::string token_type_as_str(TokenType t)
             return "INTEGER";
         case TokenType::ENDLINE:
             return "ENDLINE";
+        case TokenType::SECTION:
+            return "SECTION";
     }
     return "<?>";
 }
@@ -39,8 +42,9 @@ public:
 private:
     explicit Lexer(std::istream &ss);
     std::vector<Token> generate_tokens();
-    void identifier(std::string &identifier_data);
-    void number(std::string &identifier_data);
+    void identifier(std::string &data);
+    void number(std::string &data);
+    void section();
     void comment();
     char peek_next();
     char next();

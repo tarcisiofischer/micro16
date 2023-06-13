@@ -77,6 +77,8 @@ std::vector<Token> Lexer::generate_tokens()
             this->number(data);
         } else if (c == '/') {
             this->comment();
+        } else if (c == '.') {
+            this->section();
         } else {
             throw std::runtime_error("Unexpected '" + std::string{c} + "' at line " + std::to_string(this->line));
         }
@@ -115,6 +117,15 @@ void Lexer::number(std::string &data)
         }
     }
     this->tokens.push_back(Token{this->line, this->startcol, TokenType::INTEGER, data});
+}
+
+void Lexer::section()
+{
+    auto data = std::string{"."};
+    while (is_alpha_numeric(this->peek_next())) {
+        data += this->next();
+    }
+    this->tokens.push_back(Token{this->line, this->startcol, TokenType::SECTION, data});
 }
 
 void Lexer::comment()
