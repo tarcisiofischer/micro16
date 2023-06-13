@@ -47,6 +47,17 @@ int main(int argc, char** argv)
         std::cout << std::hex << pos << ": " << std::bitset<16>(i) << "\n";
     }
 
+    using Byte = char;
+    static constexpr auto BANK_SIZE = 64 * 1024;
+    auto memory = std::array<Byte, BANK_SIZE>{};
+    for (auto&& [pos, i] : instructions) {
+        memory[pos + 0] = (i & 0xff00) >> 8;
+        memory[pos + 1] = (i & 0x00ff) >> 0;
+    }
+    auto out_file = std::ofstream{output_file, std::ios::out | std::ios::binary};
+    auto* d = memory.data();
+    out_file.write(d, memory.size());
+
     return 0;
 }
 
