@@ -1,4 +1,5 @@
 #include <assembler/parser.hpp>
+#include <isa.h>
 #include <cmath>
 
 void unexpected_token(Token const& actual, TokenType expected, std::string const& extra_msg="")
@@ -85,80 +86,78 @@ std::map<Position, Instruction> Parser::generate_instruction_list(std::vector<To
     while(t != tokens.cend()) {
         if (t->type == TokenType::IDENTIFIER) {
             if (t->data == "NOP") {
-                add_instruction((0b00000000 << 8));
+                add_instruction((NOP_CODE << 8));
             } else if (t->data == "ADD") {
-                add_instruction((0b00000001 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
+                add_instruction((ADD_CODE << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "SUB") {
-                add_instruction((0b00000010 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
+                add_instruction((SUB_CODE << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "AND") {
-                add_instruction((0b00000011 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
+                add_instruction((AND_CODE << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "OR") {
-                add_instruction((0b00000100 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
+                add_instruction((OR_CODE << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "XOR") {
-                add_instruction((0b00000101 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
+                add_instruction((XOR_CODE << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "INC") {
-                add_instruction((0b00000110 << 8) | (next_reg() << 0));
+                add_instruction((INC_CODE << 8) | (next_reg() << 0));
             } else if (t->data == "DEC") {
-                add_instruction((0b00000111 << 8) | (next_reg() << 0));
+                add_instruction((DEC_CODE << 8) | (next_reg() << 0));
             } else if (t->data == "SET") {
-                add_instruction((0b00001000 << 8) | (next_reg() << 6) | (next_int(2) << 4) | (next_int(4) << 0));
+                add_instruction((SET_CODE << 8) | (next_reg() << 6) | (next_int(2) << 4) | (next_int(4) << 0));
             } else if (t->data == "CLR") {
-                add_instruction((0b00001010 << 8) | (next_reg() << 0));
+                add_instruction((CLR_CODE << 8) | (next_reg() << 0));
             } else if (t->data == "NOT") {
-                add_instruction((0b00001011 << 8) | (next_reg() << 0));
+                add_instruction((NOT_CODE << 8) | (next_reg() << 0));
             } else if (t->data == "JMP") {
-                add_instruction((0b10000000 << 8) | (next_reg() << 0));
+                add_instruction((JMP_CODE << 8) | (next_reg() << 0));
             } else if (t->data == "BRE") {
-                add_instruction((0b10000010 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
+                add_instruction((BRE_CODE << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "BRNE") {
-                add_instruction((0b10000011 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
+                add_instruction((BRNE_CODE << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "BRL") {
-                add_instruction((0b10000100 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
+                add_instruction((BRL_CODE << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "BRH") {
-                add_instruction((0b10000101 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
+                add_instruction((BRH_CODE << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "BRNZ") {
-                add_instruction((0b10001001 << 8) | (next_reg() << 2) | (next_reg() << 0));
+                add_instruction((BRNZ_CODE << 8) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "CALL") {
-                add_instruction((0b10000110 << 8) | (next_reg() << 0));
+                add_instruction((CALL_CODE << 8) | (next_reg() << 0));
             } else if (t->data == "RET") {
-                add_instruction((0b10000111 << 8));
+                add_instruction((RET_CODE << 8));
             } else if (t->data == "RETI") {
-                add_instruction((0b10001000 << 8));
+                add_instruction((RETI_CODE << 8));
             } else if (t->data == "LD") {
-                add_instruction((0b01000001 << 8) | (next_reg() << 2) | (next_reg() << 0));
+                add_instruction((LD_CODE << 8) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "ST") {
-                add_instruction((0b01000010 << 8) | (next_reg() << 2) | (next_reg() << 0));
+                add_instruction((ST_CODE << 8) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "CPY") {
-                add_instruction((0b01000011 << 8) | (next_reg() << 2) | (next_reg() << 0));
+                add_instruction((CPY_CODE << 8) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "PUSH") {
-                add_instruction((0b01001000 << 8) | (next_reg() << 0));
+                add_instruction((PUSH_CODE << 8) | (next_reg() << 0));
             } else if (t->data == "POP") {
-                add_instruction((0b01001001 << 8) | (next_reg() << 0));
+                add_instruction((POP_CODE << 8) | (next_reg() << 0));
             } else if (t->data == "PEEK") {
-                add_instruction((0b01001010 << 8) | (next_reg() << 6) | (next_int(6) << 0));
+                add_instruction((PEEK_CODE << 8) | (next_reg() << 6) | (next_int(6) << 0));
             } else if (t->data == "DAI") {
-                add_instruction((0b11000000 << 8));
+                add_instruction((DAI_CODE << 8));
             } else if (t->data == "EAI") {
-                add_instruction((0b11000001 << 8));
+                add_instruction((EAI_CODE << 8));
             } else if (t->data == "DTI") {
-                add_instruction((0b11000010 << 8) | (next_int(1) << 0));
+                add_instruction((DTI_CODE << 8) | (next_int(1) << 0));
             } else if (t->data == "ETI") {
-                add_instruction((0b11000011 << 8) | (next_int(1) << 0));
+                add_instruction((ETI_CODE << 8) | (next_int(1) << 0));
             } else if (t->data == "SELB") {
-                add_instruction((0b11000100 << 8) | (next_int(2) << 0));
+                add_instruction((SELB_CODE << 8) | (next_int(2) << 0));
             } else if (t->data == "BRK") {
-                add_instruction((0b11111110 << 8));
+                add_instruction((BRK_CODE << 8));
             } else if (t->data == "HLT") {
-                add_instruction((0b11111111 << 8));
+                add_instruction((HLT_CODE << 8));
             } else {
                 unknown_instruction(*t);
             }
         } else if (t->type == TokenType::ENDLINE) {
             /* Ignore empty lines */
         } else if (t->type == TokenType::SECTION) {
-            t = std::next(t);
-            auto section_pos = extract_int(*t, 16);
-            pos = section_pos;
+            pos = next_int(16);
         } else {
             unexpected_token(*t, TokenType::IDENTIFIER);
         }

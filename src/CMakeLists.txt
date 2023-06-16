@@ -12,6 +12,8 @@ set(MICRO16_APPLICATION_FILES
 )
 
 set(MICRO16_CORE_FILES
+    isa.h
+    specs.h
     sdl_screen.cpp
     sdl_screen.hpp
     micro16.cpp
