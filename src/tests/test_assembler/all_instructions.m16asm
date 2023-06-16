@@ -1,0 +1,43 @@
+// Test file that goes through all possible instructions to make sure at least
+// the basic code is being generated correctly.
+
+/* Arithmetic & Logic instructions */
+NOP
+ADD W0 W1 W2
+SUB W0 W1 W2
+AND W0 W1 W2
+OR W0 W1 W2
+XOR W0 W1 W2
+INC W3
+DEC W3
+SET W3 1 10
+CLR W3
+NOT W3
+
+/* Branch instructions */
+JMP W0
+BRE W0 W1 W2
+BRNE W0 W1 W2
+BRL W0 W1 W2
+BRH W0 W1 W2
+BRNZ W0 W1
+CALL W0
+RET
+RETI
+
+/* Memory instructions */
+LD W0 W1
+ST W0 W1
+CPY W0 W1
+PUSH W0
+POP W0
+PEEK W0 0b111111
+
+/* Control instructions */
+DAI
+EAI
+DTI 1
+ETI 1
+SELB 3
+BRK
+HLT

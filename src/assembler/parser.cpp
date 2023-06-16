@@ -64,24 +64,6 @@ int extract_register(Token const& t)
     throw ParserError(msg, t);
 }
 
-Instruction arithmetic_instruction(Instruction base, std::vector<Token>::const_iterator& t)
-{
-    t = std::next(t);
-    auto cc = extract_register(*t);
-    t = std::next(t);
-    auto aa = extract_register(*t);
-    t = std::next(t);
-    auto bb = extract_register(*t);
-    return base | (cc << 4) | (aa << 2) | (bb << 0);
-}
-
-Instruction unary_instruction(Instruction base, std::vector<Token>::const_iterator& t)
-{
-    t = std::next(t);
-    auto aa = extract_register(*t);
-    return base | (aa << 0);
-}
-
 std::map<Position, Instruction> Parser::generate_instruction_list(std::vector<Token> const& tokens)
 {
     auto pos = Position{0x0000};
@@ -91,118 +73,83 @@ std::map<Position, Instruction> Parser::generate_instruction_list(std::vector<To
         pos += 2;
     };
     auto t = tokens.cbegin();
+    auto next_reg = [&t]() {
+        t = std::next(t);
+        return extract_register(*t);
+    };
+    auto next_int = [&t](int size) {
+        t = std::next(t);
+        return extract_int(*t, size);
+    };
+
     while(t != tokens.cend()) {
         if (t->type == TokenType::IDENTIFIER) {
             if (t->data == "NOP") {
-                add_instruction(0b00000000);
+                add_instruction((0b00000000 << 8));
             } else if (t->data == "ADD") {
-                add_instruction(arithmetic_instruction(0x0100, t));
+                add_instruction((0b00000001 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "SUB") {
-                add_instruction(arithmetic_instruction(0x0200, t));
+                add_instruction((0b00000010 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "AND") {
-                add_instruction(arithmetic_instruction(0x0300, t));
+                add_instruction((0b00000011 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "OR") {
-                add_instruction(arithmetic_instruction(0x0400, t));
+                add_instruction((0b00000100 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "XOR") {
-                add_instruction(arithmetic_instruction(0x0500, t));
+                add_instruction((0b00000101 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "INC") {
-                add_instruction(unary_instruction(0x0600, t));
+                add_instruction((0b00000110 << 8) | (next_reg() << 0));
             } else if (t->data == "DEC") {
-                add_instruction(unary_instruction(0x0700, t));
+                add_instruction((0b00000111 << 8) | (next_reg() << 0));
             } else if (t->data == "SET") {
-                t = std::next(t);
-                auto aa = extract_register(*t);
-                t = std::next(t);
-                auto yy = extract_int(*t, 2);
-                t = std::next(t);
-                auto xxxx = extract_int(*t, 4);
-                auto instruction = 0b0000100000000000 | (aa << 6) | (yy << 4) | (xxxx << 0);
-                add_instruction(instruction);
+                add_instruction((0b00001000 << 8) | (next_reg() << 6) | (next_int(2) << 4) | (next_int(4) << 0));
             } else if (t->data == "CLR") {
-                t = std::next(t);
-                auto aa = extract_int(*t, 2);
-                auto instruction = 0b0000101000000000 | (aa << 0);
-                add_instruction(instruction);
+                add_instruction((0b00001010 << 8) | (next_reg() << 0));
             } else if (t->data == "NOT") {
-                t = std::next(t);
-                auto aa = extract_register(*t);
-                auto instruction = 0b0000101100000000 | (aa << 0);
-                add_instruction(instruction);
+                add_instruction((0b00001011 << 8) | (next_reg() << 0));
             } else if (t->data == "JMP") {
-                t = std::next(t);
-                auto aa = extract_register(*t);
-                auto instruction = 0b1000000000000000 | (aa << 0);
-                add_instruction(instruction);
+                add_instruction((0b10000000 << 8) | (next_reg() << 0));
             } else if (t->data == "BRE") {
-                t = std::next(t);
-                auto cc = extract_int(*t, 2);
-                t = std::next(t);
-                auto aa = extract_int(*t, 2);
-                t = std::next(t);
-                auto bb = extract_int(*t, 2);
-                auto instruction = 0b1000001000000000 | (cc << 4) | (aa << 2) | (bb << 0);
-                add_instruction(instruction);
+                add_instruction((0b10000010 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "BRNE") {
-                not_implemented(*t);
+                add_instruction((0b10000011 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "BRL") {
-                not_implemented(*t);
+                add_instruction((0b10000100 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "BRH") {
-                not_implemented(*t);
+                add_instruction((0b10000101 << 8) | (next_reg() << 4) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "BRNZ") {
-                t = std::next(t);
-                auto cc = extract_register(*t);
-                t = std::next(t);
-                auto aa = extract_register(*t);
-                auto instruction = 0b1000100100000000 | (cc << 2) | (aa << 0);
-                add_instruction(instruction);
+                add_instruction((0b10001001 << 8) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "CALL") {
-                not_implemented(*t);
+                add_instruction((0b10000110 << 8) | (next_reg() << 0));
             } else if (t->data == "RET") {
-                add_instruction(0b1000011100000000);
+                add_instruction((0b10000111 << 8));
             } else if (t->data == "RETI") {
-                add_instruction(0b1000100000000000);
+                add_instruction((0b10001000 << 8));
             } else if (t->data == "LD") {
-                t = std::next(t);
-                auto aa = extract_register(*t);
-                t = std::next(t);
-                auto bb = extract_register(*t);
-                auto instruction = 0b0100000100000000 | (aa << 2) | (bb << 0);
-                add_instruction(instruction);
+                add_instruction((0b01000001 << 8) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "ST") {
-                t = std::next(t);
-                auto aa = extract_register(*t);
-                t = std::next(t);
-                auto bb = extract_register(*t);
-                auto instruction = 0b0100001000000000 | (aa << 2) | (bb << 0);
-                add_instruction(instruction);
+                add_instruction((0b01000010 << 8) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "CPY") {
-                not_implemented(*t);
+                add_instruction((0b01000011 << 8) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "PUSH") {
-                not_implemented(*t);
+                add_instruction((0b01001000 << 8) | (next_reg() << 0));
             } else if (t->data == "POP") {
-                not_implemented(*t);
+                add_instruction((0b01001001 << 8) | (next_reg() << 0));
             } else if (t->data == "PEEK") {
-                not_implemented(*t);
+                add_instruction((0b01001010 << 8) | (next_reg() << 6) | (next_int(6) << 0));
             } else if (t->data == "DAI") {
-                not_implemented(*t);
+                add_instruction((0b11000000 << 8));
             } else if (t->data == "EAI") {
-                add_instruction(0b1100000100000000);
+                add_instruction((0b11000001 << 8));
             } else if (t->data == "DTI") {
-                not_implemented(*t);
+                add_instruction((0b11000010 << 8) | (next_int(1) << 0));
             } else if (t->data == "ETI") {
-                t = std::next(t);
-                auto a = extract_int(*t, 1);
-                auto instruction = 0b1100001100000000 | (a << 0);
-                add_instruction(instruction);
+                add_instruction((0b11000011 << 8) | (next_int(1) << 0));
             } else if (t->data == "SELB") {
-                t = std::next(t);
-                auto aa = extract_int(*t, 2);
-                auto instruction = 0b1100010000000000 | (aa << 0);
-                add_instruction(instruction);
+                add_instruction((0b11000100 << 8) | (next_int(2) << 0));
             } else if (t->data == "BRK") {
-                not_implemented(*t);
+                add_instruction((0b11111110 << 8));
             } else if (t->data == "HLT") {
-                add_instruction(0b1111111100000000);
+                add_instruction((0b11111111 << 8));
             } else {
                 unknown_instruction(*t);
             }

@@ -80,7 +80,7 @@ std::vector<Token> Lexer::generate_tokens()
         } else if (c == '.') {
             this->section();
         } else {
-            throw std::runtime_error("Unexpected '" + std::string{c} + "' at line " + std::to_string(this->line));
+            throw LexerError("Unexpected '" + std::string{c} + "' at line " + std::to_string(this->line), this->line);
         }
     }
     return this->tokens;
@@ -109,11 +109,11 @@ void Lexer::number(std::string &data)
             while (is_binary_digit(this->peek_next())) {
                 data += this->next();
             }
-        } else {
-            // Decimal
-            while (is_digit(this->peek_next())) {
-                data += this->next();
-            }
+        }
+    } else {
+        // Decimal
+        while (is_digit(this->peek_next())) {
+            data += this->next();
         }
     }
     this->tokens.push_back(Token{this->line, this->startcol, TokenType::INTEGER, data});
@@ -133,7 +133,8 @@ void Lexer::comment()
     auto c = this->next();
     if (c == '/') {
         // Single line comment
-        while (!is_linebreak(this->next())) {
+        while (!is_linebreak(this->peek_next())) {
+            (void) this->next();
             continue;
         }
     } else if (c == '*') {
@@ -149,7 +150,7 @@ void Lexer::comment()
         }
         (void) this->next(); // consume last '/'
     } else {
-        throw std::runtime_error("Unexpected '" + std::string{c} + "' at line " + std::to_string(this->line) + " (Was expecting a comment)");
+        throw LexerError("Unexpected '" + std::string{c} + "' at line " + std::to_string(this->line) + " (Was expecting a comment)", this->line);
     }
 }
 

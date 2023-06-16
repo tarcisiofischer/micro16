@@ -1,7 +1,8 @@
-#include <argparse.hpp>
 #include <micro16.hpp>
 #include <assembler/lexer.hpp>
 #include <assembler/parser.hpp>
+#include <assembler/output_utils.h>
+#include <argparse.hpp>
 #include <bitset>
 
 int main(int argc, char** argv)
@@ -23,7 +24,23 @@ int main(int argc, char** argv)
     auto input_file = arg_parser.get<std::string>("input_file");
     auto output_file = arg_parser.get<std::string>("output_file");
 
-    auto tokens = Lexer::tokens_from_file(input_file);
+    auto tokens = [&]() -> decltype(Lexer::tokens_from_file(input_file)){
+        try {
+            return Lexer::tokens_from_file(input_file);
+        } catch (LexerError const& err) {
+            std::cerr << "In file " << output_file << ":\n";
+            std::cerr << "|  " << err.what() << "\n";
+            auto f = std::ifstream(input_file);
+            auto s = std::string{};
+            for (int i = 1; i <= err.line_number; i++) {
+                std::getline(f, s);
+            }
+            std::cerr << "|  " << err.line_number << ": " << s << "\n";
+        } catch (std::runtime_error const& err) {
+            std::cerr << err.what();
+        }
+        return {};
+    }();
     auto instructions = [&]() -> decltype(Parser::generate_instruction_list(tokens)) {
         try {
             return Parser::generate_instruction_list(tokens);
@@ -49,14 +66,8 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    auto memory = std::array<char, BANK_SIZE>{};
-    for (auto&& [pos, i] : instructions) {
-        memory[pos + 0] = (i & 0xff00) >> 8;
-        memory[pos + 1] = (i & 0x00ff) >> 0;
-    }
-    auto out_file = std::ofstream{output_file, std::ios::out | std::ios::binary};
-    auto* d = memory.data();
-    out_file.write(d, memory.size());
+    auto out_stream = std::ofstream{output_file, std::ios::out | std::ios::binary};
+    dump_instructions(instructions, out_stream);
 
     return 0;
 }

@@ -6,6 +6,14 @@
 #include <sstream>
 #include <vector>
 
+class LexerError : public std::runtime_error
+{
+public:
+    LexerError(std::string const& msg, int line_number) : std::runtime_error(msg), line_number(line_number) {}
+
+    int line_number;
+};
+
 enum class TokenType {
     IDENTIFIER,
     INTEGER,
