@@ -11,7 +11,12 @@ details on how to compile it, please see [Compiling and running](docs/how-to-com
 
 ### Examples
 
-`$ micro16 examples/led-blink.micro16`
+#### Led blink
+
+    $ micro16_asm examples/led_blink.m16asm out.micro16
+    $ micro16 out.micro16
+
+[View assembly for this example](examples/led_blink.m16asm)
 
 ![led-blink.micro16](img/led_blink.gif)
 
