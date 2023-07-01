@@ -257,13 +257,69 @@ TEST_CASE("Stack operations", MICRO16_INSTRUCTIONS_TAG) {
     });
     mcu.run();
     check_mcu_state(mcu, {
+        false,
+        0x0012,
+        0x9000,
+        0x8000,
+        0x0000,
+        0x0000,
+        0x0000,
+        0x0012
+    });
+}
+
+TEST_CASE("Push/Pop from stack", MICRO16_INSTRUCTIONS_TAG) {
+    auto code = std::array<Byte, BANK_SIZE>{
+/*0x0000*/    SELB_CODE, 0b00000001,
+/*0x0002*/    SET_CODE, 0b00001010,
+/*0x0004*/    SET_CODE, 0b01000101,
+/*0x0006*/    PUSH_CODE, 0b00000000,
+/*0x0008*/    PUSH_CODE, 0b00000001,
+/*0x000a*/    BRK_CODE, 0b00000000,
+/*0x000c*/    POP_CODE, 0b00000010,
+/*0x000e*/    POP_CODE, 0b00000011,
+/*0x0010*/    BRK_CODE, 0b00000000,
+/*0x0012*/    HLT_CODE, 0b00000000,
+    };
+
+    Micro16 mcu{code};
+    mcu.set_breakpoint_handler([&]() {
+        auto IP = mcu.get_state().IP;
+        if (IP == 0x000a) {
+            check_mcu_state(mcu, {
+                    true,
+                    0x000a,
+                    0x9000,
+                    0x8004,
+                    0x000a,
+                    0x0005,
+                    0x0000,
+                    0x0000
+            });
+        } else if (IP == 0x0010) {
+            check_mcu_state(mcu, {
+                    true,
+                    0x0010,
+                    0x9000,
+                    0x8000,
+                    0x000a,
+                    0x0005,
+                    0x0005,
+                    0x000a
+            });
+        } else {
+            FAIL("Unhandled breakpoint");
+        }
+    });
+    mcu.run();
+    check_mcu_state(mcu, {
             false,
-            0x0012,
+            0x0014,
             0x9000,
             0x8000,
-            0x0000,
-            0x0000,
-            0x0000,
-            0x0012
+            0x000a,
+            0x0005,
+            0x0005,
+            0x000a
     });
 }

@@ -88,6 +88,18 @@ TEST_CASE("Assembler", MICRO16_ASSEMBLER_TAG) {
     check_next_instruction("SET", 0b00001000, 0b01011111);
     check_next_instruction("SET", 0b00001000, 0b01001111);
 
+    /* PUSHALL expansion */
+    check_next_instruction("PUSH", 0b01001000, 0b00000000);
+    check_next_instruction("PUSH", 0b01001000, 0b00000001);
+    check_next_instruction("PUSH", 0b01001000, 0b00000010);
+    check_next_instruction("PUSH", 0b01001000, 0b00000011);
+
+    /* POPALL expansion */
+    check_next_instruction("POP", 0b01001001, 0b00000011);
+    check_next_instruction("POP", 0b01001001, 0b00000010);
+    check_next_instruction("POP", 0b01001001, 0b00000001);
+    check_next_instruction("POP", 0b01001001, 0b00000000);
+
     /* End of program (next instruction will be all zeros, which is NOP)*/
     check_next_instruction("NOP", 0b00000000, 0b00000000);
 }

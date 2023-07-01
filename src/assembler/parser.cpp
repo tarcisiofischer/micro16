@@ -161,6 +161,16 @@ std::map<Position, Instruction> Parser::generate_instruction_list(std::vector<To
                 add_instruction((SET_CODE << 8) | (reg << 6) | (2 << 4) | (((val & 0x0f00) >> 8) << 0));
                 add_instruction((SET_CODE << 8) | (reg << 6) | (1 << 4) | (((val & 0x00f0) >> 4) << 0));
                 add_instruction((SET_CODE << 8) | (reg << 6) | (0 << 4) | (((val & 0x000f) >> 0) << 0));
+            } else if (t->data == "PUSHALL") {
+                add_instruction((PUSH_CODE << 8) | (0b00 << 0));
+                add_instruction((PUSH_CODE << 8) | (0b01 << 0));
+                add_instruction((PUSH_CODE << 8) | (0b10 << 0));
+                add_instruction((PUSH_CODE << 8) | (0b11 << 0));
+            } else if (t->data == "POPALL") {
+                add_instruction((POP_CODE << 8) | (0b11 << 0));
+                add_instruction((POP_CODE << 8) | (0b10 << 0));
+                add_instruction((POP_CODE << 8) | (0b01 << 0));
+                add_instruction((POP_CODE << 8) | (0b00 << 0));
             }
 
             /* Unknown instructions */
