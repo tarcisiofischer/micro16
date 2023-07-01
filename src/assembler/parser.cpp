@@ -151,7 +151,20 @@ std::map<Position, Instruction> Parser::generate_instruction_list(std::vector<To
                 add_instruction((BRK_CODE << 8));
             } else if (t->data == "HLT") {
                 add_instruction((HLT_CODE << 8));
-            } else {
+            }
+
+            /* Pseudo-instructions */
+            else if (t->data == "SETREG") {
+                auto reg = next_reg();
+                auto val = next_int(16);
+                add_instruction((SET_CODE << 8) | (reg << 6) | (3 << 4) | (((val & 0xf000) >> 12) << 0));
+                add_instruction((SET_CODE << 8) | (reg << 6) | (2 << 4) | (((val & 0x0f00) >> 8) << 0));
+                add_instruction((SET_CODE << 8) | (reg << 6) | (1 << 4) | (((val & 0x00f0) >> 4) << 0));
+                add_instruction((SET_CODE << 8) | (reg << 6) | (0 << 4) | (((val & 0x000f) >> 0) << 0));
+            }
+
+            /* Unknown instructions */
+            else {
                 unknown_instruction(*t);
             }
         } else if (t->type == TokenType::ENDLINE) {

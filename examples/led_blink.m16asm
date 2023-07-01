@@ -6,10 +6,7 @@
 /* 0x0002 */ SET W0 3 0x1
 
              // Set W1 to 0x7d04 (Timer 1 Interrupt table address)
-/* 0x0004 */ SET W1 3 0x7
-/* 0x0006 */ SET W1 2 0xd
-/* 0x0008 */ SET W1 1 0x0
-/* 0x000a */ SET W1 0 0x4
+/* 0x0004-0x000a */ SETREG W1 0x7d04
 
              // Set Timer 1 Interrupt Table address to 0x1000
 /* 0x000c */ ST W1 W0
@@ -19,10 +16,7 @@
 /* 0x0010 */ EAI
 
              // while true {}
-/* 0x0012 */ SET W3 3 0x0
-/* 0x0014 */ SET W3 2 0x0
-/* 0x0016 */ SET W3 1 0x1
-/* 0x0018 */ SET W3 0 0xa
+/* 0x0012-0x0018 */ SETREG W3 0x001a
 /* 0x001a */ JMP W3
 /* } */
 
@@ -31,16 +25,10 @@
 /* { */
 .code 0x1000
              // 0x1010 is the loop start address (few lines below)
-/* 0x1000 */ SET W1 3 0x1
-/* 0x1002 */ SET W1 2 0x0
-/* 0x1004 */ SET W1 1 0x1
-/* 0x1006 */ SET W1 0 0x0
+/* 0x1000-0x1006 */ SETREG W1 0x1010
 
              // 0x7cfe is the address for the last pixel mapped to the screen
-/* 0x1008 */ SET W0 3 0x7
-/* 0x100a */ SET W0 2 0xc
-/* 0x100c */ SET W0 1 0xf
-/* 0x100e */ SET W0 0 0xe
+/* 0x1008-0x100e */ SETREG W0 0x7cfe
 
              // Loop through all pixels updating the color
 /* 0x1010 */ LD W0 W2

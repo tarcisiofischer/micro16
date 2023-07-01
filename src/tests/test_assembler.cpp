@@ -14,10 +14,21 @@ TEST_CASE("Assembler", MICRO16_ASSEMBLER_TAG) {
     dump_instructions(instructions, obtained_bin);
 
     using Byte = std::bitset<8>;
-    auto check_next_instruction = [&obtained_bin](std::string&& opcode, Byte expected_ls, Byte expected_rs) {
-        auto obtained_ls = Byte(obtained_bin.get());
-        auto obtained_rs = Byte(obtained_bin.get());
-        SECTION("check_next_instruction: " + opcode) {
+    auto counter = 0;
+    auto check_next_instruction = [&counter, &obtained_bin](std::string const& opcode, Byte expected_ls, Byte expected_rs) {
+        auto data = obtained_bin.get();
+        if (data == EOF) {
+            FAIL("Reached end of file, but was expecting " + opcode + " (ls)");
+        }
+        auto obtained_ls = Byte(data);
+
+        data = obtained_bin.get();
+        if (data == EOF) {
+            FAIL("Reached end of file, but was expecting " + opcode + " (rs)");
+        }
+        auto obtained_rs = Byte(data);
+
+        SECTION("[Operation " + std::to_string(counter++) + "] check_next_instruction: " + opcode) {
             REQUIRE(expected_ls == obtained_ls);
             REQUIRE(expected_rs == obtained_rs);
         }
@@ -63,6 +74,19 @@ TEST_CASE("Assembler", MICRO16_ASSEMBLER_TAG) {
     check_next_instruction("SELB", 0b11000100, 0b00000011);
     check_next_instruction("BRK",  0b11111110, 0b00000000);
     check_next_instruction("HLT",  0b11111111, 0b00000000);
+
+    /* Pseudo instruction */
+    /* SETREG expansion */
+    check_next_instruction("SET", 0b00001000, 0b00110001);
+    check_next_instruction("SET", 0b00001000, 0b00100010);
+    check_next_instruction("SET", 0b00001000, 0b00010011);
+    check_next_instruction("SET", 0b00001000, 0b00000100);
+
+    /* SETREG expansion */
+    check_next_instruction("SET", 0b00001000, 0b01111111);
+    check_next_instruction("SET", 0b00001000, 0b01101111);
+    check_next_instruction("SET", 0b00001000, 0b01011111);
+    check_next_instruction("SET", 0b00001000, 0b01001111);
 
     /* End of program (next instruction will be all zeros, which is NOP)*/
     check_next_instruction("NOP", 0b00000000, 0b00000000);
