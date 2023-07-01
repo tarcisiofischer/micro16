@@ -111,13 +111,21 @@ Same as `RET`, but also sets the `GLE` flag on the `CR` register.
 
 ## Memory instructions
 
-- #### LD `0100 0001 0000 aabb`
+- #### LD W[aa] W[bb] `0100 0001 0000 aabb`
 
 Load contents of memory address given by `W[aa]`, on the bank selected on `BK` into the register `W[bb]`.
 
-- #### ST `0100 0010 0000 aabb`
+```asm
+W[bb] = MEMORY[W[aa]]
+```
+
+- #### ST W[aa] W[bb] `0100 0010 0000 aabb`
 
 Store the contents of `W[bb]` in address given by `W[aa]`, on the bank selected on `BK`.
+
+```asm
+MEMORY[W[aa]] = W[bb]
+```
 
 - #### CPY `0100 0011 0000 aabb`
 
@@ -146,7 +154,15 @@ SP = SP - 2
 Load the value from address `SP - 0bxxxxxx` into `W[aa]`:
 
 ```
-W[aa] = *(SP - xxxxxx)
+W[aa] = *(SP - 0bxxxxxx)
+```
+
+- #### CSP `0100 1011 aaxx xxxx`
+
+Load the address `SP - 0bxxxxxx` into `W[aa]`:
+
+```
+W[aa] = SP - 0bxxxxxx
 ```
 
 ### Control instructions
@@ -178,3 +194,43 @@ Breakpoint (software handled) - Mostly used for testing.
 - #### HLT `1111 1111 0000 0000`
 
 Halt system
+
+
+### Pseudo-instructions
+
+- #### SETREG W[aa] 0xABCD
+
+Easily sets all bytes of a register
+
+Expands to
+```asm
+SET W[aa] 3 0xA
+SET W[aa] 2 0xB
+SET W[aa] 1 0xC
+SET W[aa] 0 0xD
+```
+
+- #### PUSHALL
+
+Push all registers to stack
+
+Expands to
+```asm
+PUSH W0
+PUSH W1
+PUSH W2
+PUSH W3
+```
+
+- #### POPALL
+
+Pop all registers from stack
+
+Expands to
+```asm
+PUSH W3
+PUSH W2
+PUSH W1
+PUSH W0
+```
+

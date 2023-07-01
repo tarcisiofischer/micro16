@@ -34,6 +34,7 @@ static constexpr Byte CPY_CODE{0x43};
 static constexpr Byte PUSH_CODE{0x48};
 static constexpr Byte POP_CODE{0x49};
 static constexpr Byte PEEK_CODE{0x4a};
+static constexpr Byte CSP_CODE{0x4b};
 
 // Control instructions
 static constexpr Byte DAI_CODE{0xC0};

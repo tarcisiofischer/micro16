@@ -275,37 +275,38 @@ TEST_CASE("Push/Pop from stack", MICRO16_INSTRUCTIONS_TAG) {
 /*0x0004*/    SET_CODE, 0b01000101,
 /*0x0006*/    PUSH_CODE, 0b00000000,
 /*0x0008*/    PUSH_CODE, 0b00000001,
-/*0x000a*/    BRK_CODE, 0b00000000,
-/*0x000c*/    POP_CODE, 0b00000010,
-/*0x000e*/    POP_CODE, 0b00000011,
-/*0x0010*/    BRK_CODE, 0b00000000,
-/*0x0012*/    HLT_CODE, 0b00000000,
+/*0x000a*/    CSP_CODE, 0b11000010,
+/*0x000c*/    BRK_CODE, 0b00000000,
+/*0x000e*/    POP_CODE, 0b00000010,
+/*0x0010*/    POP_CODE, 0b00000011,
+/*0x0012*/    BRK_CODE, 0b00000000,
+/*0x0014*/    HLT_CODE, 0b00000000,
     };
 
     Micro16 mcu{code};
     mcu.set_breakpoint_handler([&]() {
         auto IP = mcu.get_state().IP;
-        if (IP == 0x000a) {
+        if (IP == 0x000c) {
             check_mcu_state(mcu, {
-                    true,
-                    0x000a,
-                    0x9000,
-                    0x8004,
-                    0x000a,
-                    0x0005,
-                    0x0000,
-                    0x0000
+                true,
+                IP,
+                0x9000,
+                0x8004,
+                0x000a,
+                0x0005,
+                0x0000,
+                0x8002
             });
-        } else if (IP == 0x0010) {
+        } else if (IP == 0x0012) {
             check_mcu_state(mcu, {
-                    true,
-                    0x0010,
-                    0x9000,
-                    0x8000,
-                    0x000a,
-                    0x0005,
-                    0x0005,
-                    0x000a
+                true,
+                IP,
+                0x9000,
+                0x8000,
+                0x000a,
+                0x0005,
+                0x0005,
+                0x000a
             });
         } else {
             FAIL("Unhandled breakpoint");
@@ -313,13 +314,13 @@ TEST_CASE("Push/Pop from stack", MICRO16_INSTRUCTIONS_TAG) {
     });
     mcu.run();
     check_mcu_state(mcu, {
-            false,
-            0x0014,
-            0x9000,
-            0x8000,
-            0x000a,
-            0x0005,
-            0x0005,
-            0x000a
+        false,
+        0x0016,
+        0x9000,
+        0x8000,
+        0x000a,
+        0x0005,
+        0x0005,
+        0x000a
     });
 }

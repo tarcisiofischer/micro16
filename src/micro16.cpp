@@ -285,6 +285,11 @@ void Micro16::run_instruction(Instruction const& instruction)
         auto xx = (instruction_data & 0b00111111) >> 0;
 
         this->W[aa] = (*(raw_data_ptr + xx) << 8) + (*(raw_data_ptr + xx + 1) << 0);
+    } else if (instruction_code == CSP_CODE) {
+        auto aa = (instruction_data & 0b11000000) >> 6;
+        auto xx = (instruction_data & 0b00111111) >> 0;
+
+        this->W[aa] = this->SP - xx;
     } else if (instruction_code == DAI_CODE) {
         this->CR &= ~(0x0008);
     } else if (instruction_code == EAI_CODE) {

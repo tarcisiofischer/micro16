@@ -13,6 +13,12 @@ void unexpected_token(Token const& actual, TokenType expected, std::string const
     throw ParserError{msg, actual};
 }
 
+void unknown_section_type(Token const& t)
+{
+    auto msg = "[Parser error]: Unknown section type \"" + t.data + "\" at line " + std::to_string(t.line);
+    throw ParserError(msg, t);
+}
+
 void unknown_instruction(Token const& t)
 {
     auto msg = "[Parser error]: Unknown instruction named \"" + t.data + "\" at line " + std::to_string(t.line);
@@ -137,6 +143,8 @@ std::map<Position, Instruction> Parser::generate_instruction_list(std::vector<To
                 add_instruction((POP_CODE << 8) | (next_reg() << 0));
             } else if (t->data == "PEEK") {
                 add_instruction((PEEK_CODE << 8) | (next_reg() << 6) | (next_int(6) << 0));
+            } else if (t->data == "CSP") {
+                add_instruction((CSP_CODE << 8) | (next_reg() << 6) | (next_int(6) << 0));
             } else if (t->data == "DAI") {
                 add_instruction((DAI_CODE << 8));
             } else if (t->data == "EAI") {
@@ -180,7 +188,14 @@ std::map<Position, Instruction> Parser::generate_instruction_list(std::vector<To
         } else if (t->type == TokenType::ENDLINE) {
             /* Ignore empty lines */
         } else if (t->type == TokenType::SECTION) {
-            pos = next_int(16);
+            if (t->data == ".code") {
+                pos = next_int(16);
+            } else if (t->data == ".data") {
+                next_int(16);
+                pos += 2;
+            } else {
+                unknown_section_type(*t);
+            }
         } else {
             unexpected_token(*t, TokenType::IDENTIFIER);
         }
