@@ -73,8 +73,8 @@ void SDLScreen::update()
         for (int i = 0; i < N_BYTES_Y; ++i) {
             for (int j = 0; j < N_BYTES_X; ++j) {
                 auto mem_data = video_mem[N_BYTES_X * i + j];
-                auto left_nibble = (mem_data & 0x0f) >> 0;
-                auto right_nibble = (mem_data & 0xf0) >> 4;
+                auto left_nibble = (mem_data & 0xf0) >> 4;
+                auto right_nibble = (mem_data & 0x0f) >> 0;
                 paint_pixel(ptr, i, 2 * j + 0, left_nibble);
                 paint_pixel(ptr, i, 2 * j + 1, right_nibble);
             }
