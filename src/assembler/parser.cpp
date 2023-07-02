@@ -191,7 +191,7 @@ std::map<Position, Instruction> Parser::generate_instruction_list(std::vector<To
             if (t->data == ".code") {
                 pos = next_int(16);
             } else if (t->data == ".data") {
-                next_int(16);
+                instructions[pos] = next_int(16);
                 pos += 2;
             } else {
                 unknown_section_type(*t);

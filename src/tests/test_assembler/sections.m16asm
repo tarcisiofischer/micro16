@@ -1,0 +1,10 @@
+// Test file for sections
+
+.data 0xffff
+.data 0b1010101000001111
+HLT
+
+.code 0x1000
+.data 0x1234
+.data 0b1111000010100101
+HLT

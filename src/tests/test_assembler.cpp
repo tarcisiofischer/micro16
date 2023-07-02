@@ -13,7 +13,6 @@ TEST_CASE("Assembler", MICRO16_ASSEMBLER_TAG) {
     auto obtained_bin = std::stringstream{};
     dump_instructions(instructions, obtained_bin);
 
-    using Byte = std::bitset<8>;
     auto counter = 0;
     auto check_next_instruction = [&counter, &obtained_bin](std::string const& opcode, Byte expected_ls, Byte expected_rs) {
         auto data = obtained_bin.get();
@@ -103,4 +102,28 @@ TEST_CASE("Assembler", MICRO16_ASSEMBLER_TAG) {
 
     /* End of program (next instruction will be all zeros, which is NOP)*/
     check_next_instruction("NOP", 0b00000000, 0b00000000);
+}
+
+TEST_CASE("Sections", MICRO16_ASSEMBLER_TAG) {
+    auto input_file = "test_assembler/sections.m16asm";
+    auto tokens = Lexer::tokens_from_file(input_file);
+    auto instructions = Parser::generate_instruction_list(tokens);
+
+    auto obtained_bin = std::stringstream{};
+    dump_instructions(instructions, obtained_bin);
+
+    REQUIRE(obtained_bin.get() == 0xff);
+    REQUIRE(obtained_bin.get() == 0xff);
+    REQUIRE(obtained_bin.get() == 0b10101010);
+    REQUIRE(obtained_bin.get() == 0b00001111);
+    REQUIRE(obtained_bin.get() == HLT_CODE);
+    REQUIRE(obtained_bin.get() == 0x00);
+
+    obtained_bin.seekg(0x1000);
+    REQUIRE(obtained_bin.get() == 0x12);
+    REQUIRE(obtained_bin.get() == 0x34);
+    REQUIRE(obtained_bin.get() == 0b11110000);
+    REQUIRE(obtained_bin.get() == 0b10100101);
+    REQUIRE(obtained_bin.get() == HLT_CODE);
+    REQUIRE(obtained_bin.get() == 0x00);
 }
