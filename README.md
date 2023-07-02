@@ -11,6 +11,16 @@ details on how to compile it, please see [Compiling and running](docs/how-to-com
 
 ### Examples
 
+#### Pixel art display
+
+    $ micro16_asm examples/pixel_art_example.m16asm out.micro16
+    $ micro16 out.micro16
+
+[View assembly for this example](examples/pixel_art_example.m16asm)
+
+![pixel-art-example.micro16](img/pixel_art_example.png)
+
+
 #### Led blink
 
     $ micro16_asm examples/led_blink.m16asm out.micro16

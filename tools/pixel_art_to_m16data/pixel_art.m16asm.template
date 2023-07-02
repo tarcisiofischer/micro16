@@ -1,0 +1,33 @@
+/* main() */
+/* { */
+    SETREG W0 0x0000    PUSH W0
+    SETREG W0 0x8000    PUSH W0
+    SETREG W0 0x7d00    PUSH W0
+
+.code 0x0100
+    SELB 1
+    CSP W0 0x4          LD W0 W0
+    CSP W1 0x2          LD W1 W1
+    SELB 0
+                        LD W1 W1
+    SELB 1
+                        ST W0 W1
+    SETREG W1 0x2
+    CSP W0 0x4          LD W0 W0
+    ADD W0 W1 W0
+    CSP W2 0x4          ST W2 W0
+    CSP W0 0x2          LD W0 W0
+    ADD W0 W1 W0
+    CSP W2 0x2          ST W2 W0
+
+    SETREG W2 0x0100
+    PEEK W0 0x4
+    PEEK W1 0x0
+    BRNE W2 W0 W1
+
+.code 0x0200
+    SETREG W0 0x0200
+    JMP W0
+/* } */
+
+.code 0x8000
