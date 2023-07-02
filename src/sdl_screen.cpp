@@ -24,8 +24,8 @@ SDLScreen::SDLScreen()
         "Micro16",
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
-        WIDTH,
-        HEIGHT,
+        SCALE * WIDTH,
+        SCALE * HEIGHT,
         0
     );
 }
@@ -34,6 +34,15 @@ SDLScreen::~SDLScreen()
 {
     SDL_DestroyWindow(this->window);
     SDL_Quit();
+}
+
+inline void SDLScreen::paint_pixel(unsigned int* ptr, int i, int j, Nibble const& pixel_nibble)
+{
+    for (int k = 0; k < SCALE; ++k) {
+        for (int l = 0; l < SCALE; ++l) {
+            ptr[(SCALE * SCALE * WIDTH * i + SCALE * j) + (SCALE * WIDTH * l + k)] = bits_to_color.at(pixel_nibble);
+        }
+    }
 }
 
 void SDLScreen::update()
@@ -59,11 +68,15 @@ void SDLScreen::update()
         if (video_mem == nullptr) {
             return;
         }
-        for (int i = 0; i < HEIGHT; ++i) {
-            for (int j = 0; j < WIDTH / 2; ++j) {
-                auto mem_data = video_mem[WIDTH / 2 * i + j];
-                ptr[WIDTH * i + 2 * j + 0] = bits_to_color.at((mem_data & 0x0f) >> 0);
-                ptr[WIDTH * i + 2 * j + 1] = bits_to_color.at((mem_data & 0xf0) >> 4);
+        auto constexpr N_BYTES_Y = HEIGHT;
+        auto constexpr N_BYTES_X = WIDTH / 2;
+        for (int i = 0; i < N_BYTES_Y; ++i) {
+            for (int j = 0; j < N_BYTES_X; ++j) {
+                auto mem_data = video_mem[N_BYTES_X * i + j];
+                auto left_nibble = (mem_data & 0x0f) >> 0;
+                auto right_nibble = (mem_data & 0xf0) >> 4;
+                paint_pixel(ptr, i, 2 * j + 0, left_nibble);
+                paint_pixel(ptr, i, 2 * j + 1, right_nibble);
             }
         }
     }

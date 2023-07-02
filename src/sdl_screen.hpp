@@ -24,6 +24,7 @@ static const std::unordered_map<std::bitset<4>, ColorHex> bits_to_color = {
 
 class SDLScreen : public Micro16::Adapter {
 public:
+    static auto constexpr SCALE = 2;
     static auto constexpr WIDTH = 320;
     static auto constexpr HEIGHT = 200;
 
@@ -37,6 +38,8 @@ public:
     void register_on_window_close_callback(std::function<void()> const& callback);
 
 private:
+    static inline void paint_pixel(unsigned int* ptr, int i, int j, Nibble const& mem_data);
+
     SDL_Window* window;
     Byte* video_memory_ptr;
     std::mutex video_memory_ptr_mutex;
