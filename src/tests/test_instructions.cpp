@@ -131,6 +131,8 @@ TEST_CASE("Basic arithmetic instructions", MICRO16_INSTRUCTIONS_TAG) {
                 0x0000,
                 0x0008
             });
+        } else {
+            FAIL("Unhandled breakpoint");
         }
     });
     mcu.run();
@@ -167,6 +169,8 @@ TEST_CASE("JMP instruction", MICRO16_INSTRUCTIONS_TAG) {
                 0x0000,
                 0x0000
             });
+        } else {
+            FAIL("Unhandled breakpoint");
         }
     });
     mcu.run();
@@ -197,7 +201,7 @@ TEST_CASE("Memory instructions", MICRO16_INSTRUCTIONS_TAG) {
             check_mcu_state(mcu, {
                 true,
                 IP,
-                0x9000,
+                0x5000,
                 0x8000,
                 0x8421,
                 0x8421,
@@ -208,13 +212,15 @@ TEST_CASE("Memory instructions", MICRO16_INSTRUCTIONS_TAG) {
             check_mcu_state(mcu, {
                 true,
                 IP,
-                0xb000,
+                0xd000,
                 0x8000,
                 0x8421,
                 0x0000,
                 0x0000,
                 0x0000
             });
+        } else {
+            FAIL("Unhandled breakpoint");
         }
     });
     mcu.run();
@@ -242,24 +248,26 @@ TEST_CASE("Stack operations", MICRO16_INSTRUCTIONS_TAG) {
     Micro16 mcu{code};
     mcu.set_breakpoint_handler([&]() {
         auto IP = mcu.get_state().IP;
-        if (IP == 0x0014) {
+        if (IP == 0x0016) {
             check_mcu_state(mcu, {
                 true,
                 IP,
-                0x9000,
-                0x8008,
+                0x5000,
+                0x8004,
                 0x0000,
-                0x0012,
+                0x0000,
                 0x0000,
                 0x0000
             });
+        } else {
+            FAIL("Unhandled breakpoint");
         }
     });
     mcu.run();
     check_mcu_state(mcu, {
         false,
         0x0012,
-        0x9000,
+        0x5000,
         0x8000,
         0x0000,
         0x0000,
@@ -290,7 +298,7 @@ TEST_CASE("Push/Pop from stack", MICRO16_INSTRUCTIONS_TAG) {
             check_mcu_state(mcu, {
                 true,
                 IP,
-                0x9000,
+                0x5000,
                 0x8004,
                 0x000a,
                 0x0005,
@@ -301,7 +309,7 @@ TEST_CASE("Push/Pop from stack", MICRO16_INSTRUCTIONS_TAG) {
             check_mcu_state(mcu, {
                 true,
                 IP,
-                0x9000,
+                0x5000,
                 0x8000,
                 0x000a,
                 0x0005,
@@ -316,7 +324,7 @@ TEST_CASE("Push/Pop from stack", MICRO16_INSTRUCTIONS_TAG) {
     check_mcu_state(mcu, {
         false,
         0x0016,
-        0x9000,
+        0x5000,
         0x8000,
         0x000a,
         0x0005,
