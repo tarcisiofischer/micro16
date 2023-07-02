@@ -246,14 +246,14 @@ void Micro16::run_instruction(Instruction const& instruction)
 
         IP_changed = true;
     } else if (instruction_code == LD_CODE) {
-        auto selected_bank = (this->CR & 0x3000) >> 12;
+        auto selected_bank = (this->CR & 0xc000) >> 14;
         auto aa = (instruction_data & 0b00001100) >> 2;
         auto bb = (instruction_data & 0b00000011) >> 0;
 
         auto value_ptr = &(this->memory_banks[selected_bank][this->W[aa]]);
         this->W[bb] = (*(value_ptr + 0) << 8) + (*(value_ptr + 1) << 0);
     } else if (instruction_code == ST_CODE) {
-        auto selected_bank = (this->CR & 0x3000) >> 12;
+        auto selected_bank = (this->CR & 0xc000) >> 14;
         auto aa = (instruction_data & 0b00001100) >> 2;
         auto bb = (instruction_data & 0b00000011) >> 0;
 
@@ -284,7 +284,7 @@ void Micro16::run_instruction(Instruction const& instruction)
         auto aa = (instruction_data & 0b11000000) >> 6;
         auto xx = (instruction_data & 0b00111111) >> 0;
 
-        this->W[aa] = (*(raw_data_ptr + xx) << 8) + (*(raw_data_ptr + xx + 1) << 0);
+        this->W[aa] = (*(raw_data_ptr - xx) << 8) + (*(raw_data_ptr - xx + 1) << 0);
     } else if (instruction_code == CSP_CODE) {
         auto aa = (instruction_data & 0b11000000) >> 6;
         auto xx = (instruction_data & 0b00111111) >> 0;
@@ -305,8 +305,8 @@ void Micro16::run_instruction(Instruction const& instruction)
     } else if (instruction_code == SELB_CODE) {
         auto aa = (instruction_data & 0b00000011) >> 0;
 
-        this->CR &= 0xcfff;
-        this->CR |= (aa << 12);
+        this->CR &= 0x3fff;
+        this->CR |= (aa << 14);
     } else if (instruction_code == BRK_CODE) {
         if (this->breakpoint_handler) {
             this->breakpoint_handler();
