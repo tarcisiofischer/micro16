@@ -10,7 +10,9 @@
 #include <chrono>
 #include <vector>
 #include <functional>
+#include <iomanip>
 
+using namespace std::string_literals;
 using namespace std::chrono_literals;
 
 class Micro16 {
@@ -94,5 +96,20 @@ private:
     std::vector<Adapter*> adapters;
     std::function<void()> breakpoint_handler;
 };
+
+inline std::ostream& operator<<(std::ostream& os, Micro16::InternalState const& state)
+{
+    os << "{\n"s;
+    os << "\tis_running? = "s << (state.running ? "true"s : "false"s) << "\n";
+    os << "\tIP = 0x"s << std::setw(4) << std::setfill('0') << std::hex << state.IP << "\n";
+    os << "\tCR = 0x"s << std::setw(4) << std::setfill('0') << std::hex << state.CR << "\n";
+    os << "\tSP = 0x"s << std::setw(4) << std::setfill('0') << std::hex << state.SP << "\n";
+    os << "\tW0 = 0x"s << std::setw(4) << std::setfill('0') << std::hex << state.W0 << "\n";
+    os << "\tW1 = 0x"s << std::setw(4) << std::setfill('0') << std::hex << state.W1 << "\n";
+    os << "\tW2 = 0x"s << std::setw(4) << std::setfill('0') << std::hex << state.W2 << "\n";
+    os << "\tW3 = 0x"s << std::setw(4) << std::setfill('0') << std::hex << state.W3 << "\n";
+    os << "}"s;
+    return os;
+}
 
 #endif //MICRO16_MICRO16_H

@@ -114,209 +114,280 @@ void Micro16::run_instruction(Instruction const& instruction)
 
     bool IP_changed = false;
 
-    if (instruction_code == NOP_CODE) {
-    } else if (instruction_code == ADD_CODE) {
-        auto aa = (instruction_data & 0b00001100) >> 2;
-        auto bb = (instruction_data & 0b00000011) >> 0;
-        auto cc = (instruction_data & 0b00110000) >> 4;
+    switch (instruction_code) {
+        case NOP_CODE: {
+            break;
+        }
+        case ADD_CODE: {
+            auto aa = (instruction_data & 0b00001100) >> 2;
+            auto bb = (instruction_data & 0b00000011) >> 0;
+            auto cc = (instruction_data & 0b00110000) >> 4;
 
-        this->W[cc] = this->W[aa] + this->W[bb];
-    } else if (instruction_code == SUB_CODE) {
-        auto aa = (instruction_data & 0b00001100) >> 2;
-        auto bb = (instruction_data & 0b00000011) >> 0;
-        auto cc = (instruction_data & 0b00110000) >> 4;
+            this->W[cc] = this->W[aa] + this->W[bb];
+            break;
+        }
+        case SUB_CODE: {
+            auto aa = (instruction_data & 0b00001100) >> 2;
+            auto bb = (instruction_data & 0b00000011) >> 0;
+            auto cc = (instruction_data & 0b00110000) >> 4;
 
-        this->W[cc] = this->W[aa] - this->W[bb];
-    } else if (instruction_code == AND_CODE) {
-        auto aa = (instruction_data & 0b00001100) >> 2;
-        auto bb = (instruction_data & 0b00000011) >> 0;
-        auto cc = (instruction_data & 0b00110000) >> 4;
+            this->W[cc] = this->W[aa] - this->W[bb];
+            break;
+        }
+        case AND_CODE: {
+            auto aa = (instruction_data & 0b00001100) >> 2;
+            auto bb = (instruction_data & 0b00000011) >> 0;
+            auto cc = (instruction_data & 0b00110000) >> 4;
 
-        this->W[cc] = this->W[aa] & this->W[bb];
-    } else if (instruction_code == OR_CODE) {
-        auto aa = (instruction_data & 0b00001100) >> 2;
-        auto bb = (instruction_data & 0b00000011) >> 0;
-        auto cc = (instruction_data & 0b00110000) >> 4;
+            this->W[cc] = this->W[aa] & this->W[bb];
+            break;
+        }
+        case OR_CODE: {
+            auto aa = (instruction_data & 0b00001100) >> 2;
+            auto bb = (instruction_data & 0b00000011) >> 0;
+            auto cc = (instruction_data & 0b00110000) >> 4;
 
-        this->W[cc] = this->W[aa] | this->W[bb];
-    } else if (instruction_code == XOR_CODE) {
-        auto aa = (instruction_data & 0b00001100) >> 2;
-        auto bb = (instruction_data & 0b00000011) >> 0;
-        auto cc = (instruction_data & 0b00110000) >> 4;
+            this->W[cc] = this->W[aa] | this->W[bb];
+            break;
+        }
+        case XOR_CODE: {
+            auto aa = (instruction_data & 0b00001100) >> 2;
+            auto bb = (instruction_data & 0b00000011) >> 0;
+            auto cc = (instruction_data & 0b00110000) >> 4;
 
-        this->W[cc] = this->W[aa] ^ this->W[bb];
-    } else if (instruction_code == INC_CODE) {
-        auto aa = (instruction_data & 0b00000011) >> 0;
+            this->W[cc] = this->W[aa] ^ this->W[bb];
+            break;
+        }
+        case INC_CODE: {
+            auto aa = (instruction_data & 0b00000011) >> 0;
 
-        this->W[aa] += 1;
-    } else if (instruction_code == DEC_CODE) {
-        auto aa = (instruction_data & 0b00000011) >> 0;
+            this->W[aa] += 1;
+            break;
+        }
+        case DEC_CODE: {
+            auto aa = (instruction_data & 0b00000011) >> 0;
 
-        this->W[aa] -= 1;
-    } else if (instruction_code == SET_CODE) {
-        auto aa = (instruction_data & 0b11000000) >> 6;
-        auto yy = (instruction_data & 0b00110000) >> 4;
-        auto xxxx = (instruction_data & 0b00001111) >> 0;
+            this->W[aa] -= 1;
+            break;
+        }
+        case SET_CODE: {
+            auto aa = (instruction_data & 0b11000000) >> 6;
+            auto yy = (instruction_data & 0b00110000) >> 4;
+            auto xxxx = (instruction_data & 0b00001111) >> 0;
 
-        this->W[aa] &= ~(0x000F << (4 * yy));
-        this->W[aa] |= xxxx << (4 * yy);
-    } else if (instruction_code == CLR_CODE) {
-        auto aa = (instruction_data & 0b00000011) >> 0;
+            this->W[aa] &= ~(0x000F << (4 * yy));
+            this->W[aa] |= xxxx << (4 * yy);
+            break;
+        }
+        case CLR_CODE: {
+            auto aa = (instruction_data & 0b00000011) >> 0;
 
-        this->W[aa] = 0;
-    } else if (instruction_code == NOT_CODE) {
-        auto aa = (instruction_data & 0b00000011) >> 0;
+            this->W[aa] = 0;
+            break;
+        }
+        case NOT_CODE: {
+            auto aa = (instruction_data & 0b00000011) >> 0;
 
-        this->W[aa] = ~this->W[aa];
-    } else if (instruction_code == JMP_CODE) {
-        auto aa = (instruction_data & 0b00000011) >> 0;
+            this->W[aa] = ~this->W[aa];
+            break;
+        }
+        case JMP_CODE: {
+            auto aa = (instruction_data & 0b00000011) >> 0;
 
-        this->IP = this->W[aa];
-        IP_changed = true;
-    } else if (instruction_code == BRE_CODE) {
-        auto aa = (instruction_data & 0b00001100) >> 2;
-        auto bb = (instruction_data & 0b00000011) >> 0;
-        auto cc = (instruction_data & 0b00110000) >> 4;
-
-        if (this->W[aa] == this->W[bb]) {
-            this->IP = this->W[cc];
+            this->IP = this->W[aa];
             IP_changed = true;
+            break;
         }
-    } else if (instruction_code == BRNE_CODE) {
-        auto aa = (instruction_data & 0b00001100) >> 2;
-        auto bb = (instruction_data & 0b00000011) >> 0;
-        auto cc = (instruction_data & 0b00110000) >> 4;
+        case BRE_CODE: {
+            auto aa = (instruction_data & 0b00001100) >> 2;
+            auto bb = (instruction_data & 0b00000011) >> 0;
+            auto cc = (instruction_data & 0b00110000) >> 4;
 
-        if (this->W[aa] != this->W[bb]) {
-            this->IP = this->W[cc];
+            if (this->W[aa] == this->W[bb]) {
+                this->IP = this->W[cc];
+                IP_changed = true;
+            }
+            break;
+        }
+        case BRNE_CODE: {
+            auto aa = (instruction_data & 0b00001100) >> 2;
+            auto bb = (instruction_data & 0b00000011) >> 0;
+            auto cc = (instruction_data & 0b00110000) >> 4;
+
+            if (this->W[aa] != this->W[bb]) {
+                this->IP = this->W[cc];
+                IP_changed = true;
+            }
+            break;
+        }
+        case BRL_CODE: {
+            auto aa = (instruction_data & 0b00001100) >> 2;
+            auto bb = (instruction_data & 0b00000011) >> 0;
+            auto cc = (instruction_data & 0b00110000) >> 4;
+
+            if (this->W[aa] < this->W[bb]) {
+                this->IP = W[cc];
+                IP_changed = true;
+            }
+            break;
+        }
+        case BRH_CODE: {
+            auto aa = (instruction_data & 0b00001100) >> 2;
+            auto bb = (instruction_data & 0b00000011) >> 0;
+            auto cc = (instruction_data & 0b00110000) >> 4;
+
+            if (this->W[aa] > this->W[bb]) {
+                this->IP = W[cc];
+                IP_changed = true;
+            }
+            break;
+        }
+        case CALL_CODE: {
+            auto stack_bank = (this->CR & 0x3000) >> 12;
+            auto aa = (instruction_data & 0b00000011) >> 0;
+
+            this->SP = this->SP + 2;
+            auto next_instruction = this->IP + 2;
+            this->memory_banks[stack_bank][this->SP] = (next_instruction & 0xff00) >> 8;
+            this->memory_banks[stack_bank][this->SP + 1] = (next_instruction & 0x00ff) >> 0;
+            this->IP = this->W[aa];
+
             IP_changed = true;
+            break;
         }
-    } else if (instruction_code == BRL_CODE) {
-        auto aa = (instruction_data & 0b00001100) >> 2;
-        auto bb = (instruction_data & 0b00000011) >> 0;
-        auto cc = (instruction_data & 0b00110000) >> 4;
+        case BRNZ_CODE: {
+            auto aa = (instruction_data & 0b00000011) >> 0;
+            auto cc = (instruction_data & 0b00001100) >> 2;
 
-        if (this->W[aa] < this->W[bb]) {
-            this->IP = W[cc];
+            if (this->W[aa] != 0) {
+                this->IP = W[cc];
+                IP_changed = true;
+            }
+            break;
+        }
+        case RET_CODE: {
+            auto stack_bank = (this->CR & 0x3000) >> 12;
+            auto raw_data_ptr = &(this->memory_banks[stack_bank][this->SP]);
+
+            this->IP = (*(raw_data_ptr + 0) << 8) + (*(raw_data_ptr + 1) << 0);
+            this->SP = this->SP - 2;
+
             IP_changed = true;
+            break;
         }
-    } else if (instruction_code == BRH_CODE) {
-        auto aa = (instruction_data & 0b00001100) >> 2;
-        auto bb = (instruction_data & 0b00000011) >> 0;
-        auto cc = (instruction_data & 0b00110000) >> 4;
+        case RETI_CODE: {
+            auto stack_bank = (this->CR & 0x3000) >> 12;
+            auto raw_data_ptr = &(this->memory_banks[stack_bank][this->SP]);
 
-        if (this->W[aa] > this->W[bb]) {
-            this->IP = W[cc];
+            this->IP = (*(raw_data_ptr + 0) << 8) + (*(raw_data_ptr + 1) << 0);
+            this->SP = this->SP - 2;
+            this->CR |= 0x0008;
+
             IP_changed = true;
+            break;
         }
-    } else if (instruction_code == CALL_CODE) {
-        auto stack_bank = (this->CR & 0x3000) >> 12;
-        auto aa = (instruction_data & 0b00000011) >> 0;
+        case LD_CODE: {
+            auto selected_bank = (this->CR & 0xc000) >> 14;
+            auto aa = (instruction_data & 0b00001100) >> 2;
+            auto bb = (instruction_data & 0b00000011) >> 0;
 
-        this->SP = this->SP + 2;
-        auto next_instruction = this->IP + 2;
-        this->memory_banks[stack_bank][this->SP] = (next_instruction & 0xff00) >> 8;
-        this->memory_banks[stack_bank][this->SP + 1] = (next_instruction & 0x00ff) >> 0;
-        this->IP = this->W[aa];
-
-        IP_changed = true;
-    } else if (instruction_code == BRNZ_CODE) {
-        auto aa = (instruction_data & 0b00000011) >> 0;
-        auto cc = (instruction_data & 0b00001100) >> 2;
-
-        if (this->W[aa] != 0) {
-            this->IP = W[cc];
-            IP_changed = true;
+            auto value_ptr = &(this->memory_banks[selected_bank][this->W[aa]]);
+            this->W[bb] = (*(value_ptr + 0) << 8) + (*(value_ptr + 1) << 0);
+            break;
         }
-    } else if (instruction_code == RET_CODE) {
-        auto stack_bank = (this->CR & 0x3000) >> 12;
-        auto raw_data_ptr = &(this->memory_banks[stack_bank][this->SP]);
+        case ST_CODE: {
+            auto selected_bank = (this->CR & 0xc000) >> 14;
+            auto aa = (instruction_data & 0b00001100) >> 2;
+            auto bb = (instruction_data & 0b00000011) >> 0;
 
-        this->IP = (*(raw_data_ptr + 0) << 8) + (*(raw_data_ptr + 1) << 0);
-        this->SP = this->SP - 2;
-
-        IP_changed = true;
-    } else if (instruction_code == RETI_CODE) {
-        auto stack_bank = (this->CR & 0x3000) >> 12;
-        auto raw_data_ptr = &(this->memory_banks[stack_bank][this->SP]);
-
-        this->IP = (*(raw_data_ptr + 0) << 8) + (*(raw_data_ptr + 1) << 0);
-        this->SP = this->SP - 2;
-        this->CR |= 0x0008;
-
-        IP_changed = true;
-    } else if (instruction_code == LD_CODE) {
-        auto selected_bank = (this->CR & 0xc000) >> 14;
-        auto aa = (instruction_data & 0b00001100) >> 2;
-        auto bb = (instruction_data & 0b00000011) >> 0;
-
-        auto value_ptr = &(this->memory_banks[selected_bank][this->W[aa]]);
-        this->W[bb] = (*(value_ptr + 0) << 8) + (*(value_ptr + 1) << 0);
-    } else if (instruction_code == ST_CODE) {
-        auto selected_bank = (this->CR & 0xc000) >> 14;
-        auto aa = (instruction_data & 0b00001100) >> 2;
-        auto bb = (instruction_data & 0b00000011) >> 0;
-
-        this->memory_banks[selected_bank][this->W[aa]] = (this->W[bb] & 0xff00) >> 8;
-        this->memory_banks[selected_bank][this->W[aa] + 1] = (this->W[bb] & 0x00ff) >> 0;
-    } else if (instruction_code == CPY_CODE) {
-        auto aa = (instruction_data & 0b00001100) >> 2;
-        auto bb = (instruction_data & 0b00000011) >> 0;
-
-        this->W[bb] = this->W[aa];
-    } else if (instruction_code == PUSH_CODE) {
-        auto stack_bank = (this->CR & 0x3000) >> 12;
-        auto aa = (instruction_data & 0b00000011) >> 0;
-
-        this->SP = this->SP + 2;
-        this->memory_banks[stack_bank][this->SP] = (this->W[aa] & 0xff00) >> 8;
-        this->memory_banks[stack_bank][this->SP + 1] = (this->W[aa] & 0x00ff) >> 0;
-    } else if (instruction_code == POP_CODE) {
-        auto stack_bank = (this->CR & 0x3000) >> 12;
-        auto raw_data_ptr = &(this->memory_banks[stack_bank][this->SP]);
-        auto aa = (instruction_data & 0b00000011) >> 0;
-
-        this->W[aa] = (*(raw_data_ptr + 0) << 8) + (*(raw_data_ptr + 1) << 0);
-        this->SP = this->SP - 2;
-    } else if (instruction_code == PEEK_CODE) {
-        auto stack_bank = (this->CR & 0x3000) >> 12;
-        auto raw_data_ptr = &(this->memory_banks[stack_bank][this->SP]);
-        auto aa = (instruction_data & 0b11000000) >> 6;
-        auto xx = (instruction_data & 0b00111111) >> 0;
-
-        this->W[aa] = (*(raw_data_ptr - xx) << 8) + (*(raw_data_ptr - xx + 1) << 0);
-    } else if (instruction_code == CSP_CODE) {
-        auto aa = (instruction_data & 0b11000000) >> 6;
-        auto xx = (instruction_data & 0b00111111) >> 0;
-
-        this->W[aa] = this->SP - xx;
-    } else if (instruction_code == DAI_CODE) {
-        this->CR &= ~(0x0008);
-    } else if (instruction_code == EAI_CODE) {
-        this->CR |= 0x0008;
-    } else if (instruction_code == DTI_CODE) {
-        auto a = (instruction_data & 0b00000001) >> 0;
-
-        this->CR &= ~(0x0100 << a);
-    } else if (instruction_code == ETI_CODE) {
-        auto a = (instruction_data & 0b00000001) >> 0;
-
-        this->CR |= (0x0100 << a);
-    } else if (instruction_code == SELB_CODE) {
-        auto aa = (instruction_data & 0b00000011) >> 0;
-
-        this->CR &= 0x3fff;
-        this->CR |= (aa << 14);
-    } else if (instruction_code == BRK_CODE) {
-        if (this->breakpoint_handler) {
-            this->breakpoint_handler();
+            this->memory_banks[selected_bank][this->W[aa]] = (this->W[bb] & 0xff00) >> 8;
+            this->memory_banks[selected_bank][this->W[aa] + 1] = (this->W[bb] & 0x00ff) >> 0;
+            break;
         }
-    } else if (instruction_code == HLT_CODE) {
-        this->running = false;
-    } else {
-        std::stringstream ss;
-        ss << "Unknown instruction code " << std::hex << int(instruction_code);
-        throw std::runtime_error(ss.str());
+        case CPY_CODE: {
+            auto aa = (instruction_data & 0b00001100) >> 2;
+            auto bb = (instruction_data & 0b00000011) >> 0;
+
+            this->W[bb] = this->W[aa];
+            break;
+        }
+        case PUSH_CODE: {
+            auto stack_bank = (this->CR & 0x3000) >> 12;
+            auto aa = (instruction_data & 0b00000011) >> 0;
+
+            this->SP = this->SP + 2;
+            this->memory_banks[stack_bank][this->SP] = (this->W[aa] & 0xff00) >> 8;
+            this->memory_banks[stack_bank][this->SP + 1] = (this->W[aa] & 0x00ff) >> 0;
+            break;
+        }
+        case POP_CODE: {
+            auto stack_bank = (this->CR & 0x3000) >> 12;
+            auto raw_data_ptr = &(this->memory_banks[stack_bank][this->SP]);
+            auto aa = (instruction_data & 0b00000011) >> 0;
+
+            this->W[aa] = (*(raw_data_ptr + 0) << 8) + (*(raw_data_ptr + 1) << 0);
+            this->SP = this->SP - 2;
+            break;
+        }
+        case PEEK_CODE: {
+            auto stack_bank = (this->CR & 0x3000) >> 12;
+            auto raw_data_ptr = &(this->memory_banks[stack_bank][this->SP]);
+            auto aa = (instruction_data & 0b11000000) >> 6;
+            auto xx = (instruction_data & 0b00111111) >> 0;
+
+            this->W[aa] = (*(raw_data_ptr - xx) << 8) + (*(raw_data_ptr - xx + 1) << 0);
+            break;
+        }
+        case CSP_CODE: {
+            auto aa = (instruction_data & 0b11000000) >> 6;
+            auto xx = (instruction_data & 0b00111111) >> 0;
+
+            this->W[aa] = this->SP - xx;
+            break;
+        }
+        case DAI_CODE: {
+            this->CR &= ~(0x0008);
+            break;
+        }
+        case EAI_CODE: {
+            this->CR |= 0x0008;
+            break;
+        }
+        case DTI_CODE: {
+            auto a = (instruction_data & 0b00000001) >> 0;
+
+            this->CR &= ~(0x0100 << a);
+            break;
+        }
+        case ETI_CODE: {
+            auto a = (instruction_data & 0b00000001) >> 0;
+
+            this->CR |= (0x0100 << a);
+            break;
+        }
+        case SELB_CODE: {
+            auto aa = (instruction_data & 0b00000011) >> 0;
+
+            this->CR &= 0x3fff;
+            this->CR |= (aa << 14);
+            break;
+        }
+        case BRK_CODE: {
+            if (this->breakpoint_handler) {
+                this->breakpoint_handler();
+            }
+            break;
+        }
+        case HLT_CODE: {
+            this->running = false;
+            break;
+        }
+        default: {
+            std::stringstream ss;
+            ss << "Unknown instruction code " << std::hex << int(instruction_code) << "\n";
+            ss << "CPU state " << this->get_state() << "\n";
+            throw std::runtime_error(ss.str());
+        }
     }
 
     if (!IP_changed) {
