@@ -126,4 +126,23 @@ TEST_CASE("Sections", MICRO16_ASSEMBLER_TAG) {
     REQUIRE(obtained_bin.get() == 0b10100101);
     REQUIRE(obtained_bin.get() == HLT_CODE);
     REQUIRE(obtained_bin.get() == 0x00);
+
+    /* Label resolution  */
+    auto extract_label_resolution_from_SETREG_at = [&](auto pos) {
+        auto obtained_label_resolution = std::bitset<16>{0x0000};
+        obtained_bin.seekg(pos);
+        (void) obtained_bin.get();
+        obtained_label_resolution |= (obtained_bin.get() & 0x0f) << 12;
+        (void) obtained_bin.get();
+        obtained_label_resolution |= (obtained_bin.get() & 0x0f) << 8;
+        (void) obtained_bin.get();
+        obtained_label_resolution |= (obtained_bin.get() & 0x0f) << 4;
+        (void) obtained_bin.get();
+        obtained_label_resolution |= (obtained_bin.get() & 0x0f) << 0;
+        return obtained_label_resolution;
+    };
+    /* SETREG expansion with label *before* definition */
+    REQUIRE(extract_label_resolution_from_SETREG_at(0x2000) == 0x2abc);
+    /* SETREG expansion with label *after* definition */
+    REQUIRE(extract_label_resolution_from_SETREG_at(0x2abc) == 0x2abc);
 }

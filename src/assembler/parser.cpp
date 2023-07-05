@@ -25,12 +25,6 @@ void unknown_instruction(Token const& t)
     throw ParserError(msg, t);
 }
 
-void not_implemented(Token const& t)
-{
-    auto msg = "[Parser error]: Instruction \"" + t.data + "\" is not yet implemented";
-    throw ParserError(msg, t);
-}
-
 int extract_int(Token const& t, int nbits)
 {
     if (t.type != TokenType::INTEGER) {
@@ -47,7 +41,7 @@ int extract_int(Token const& t, int nbits)
     }();
     if (value < 0 || value > std::pow(2, nbits)) {
         auto msg = "[Parser error]: Expected a " + std::to_string(nbits) + " value, but got " + t.data + "(" + std::to_string(value) + ")";
-        throw ParserError(msg, t);
+        throw ParserError{msg, t};
     }
     return value;
 }
@@ -71,6 +65,46 @@ int extract_register(Token const& t)
     throw ParserError(msg, t);
 }
 
+std::string extract_string(Token const& t)
+{
+    if (t.type != TokenType::IDENTIFIER) {
+        unexpected_token(t, TokenType::IDENTIFIER, "Expected a string");
+    }
+
+    return t.data;
+}
+
+class LabelResolver
+{
+using ResolverFunction = std::function<void()>;
+public:
+    void add_label(std::string const& label, Position pos)
+    {
+        this->labels_to_pos[label] = pos;
+    }
+
+    void add_resolver(ResolverFunction const& f)
+    {
+        this->resolvers.push_back(f);
+    }
+
+    void resolve_all_labels() const
+    {
+        for (auto&& f : this->resolvers) {
+            f();
+        }
+    }
+
+    Position get_label_position(std::string const& label) const
+    {
+        return labels_to_pos.at(label);
+    }
+
+private:
+    std::unordered_map<std::string, Position> labels_to_pos;
+    std::vector<ResolverFunction> resolvers;
+};
+
 std::map<Position, Instruction> Parser::generate_instruction_list(std::vector<Token> const& tokens)
 {
     auto pos = Position{0x0000};
@@ -88,6 +122,12 @@ std::map<Position, Instruction> Parser::generate_instruction_list(std::vector<To
         t = std::next(t);
         return extract_int(*t, size);
     };
+    auto next_string = [&t]() {
+        t = std::next(t);
+        return extract_string(*t);
+    };
+
+    auto label_resolver = LabelResolver{};
 
     while(t != tokens.cend()) {
         if (t->type == TokenType::IDENTIFIER) {
@@ -164,11 +204,35 @@ std::map<Position, Instruction> Parser::generate_instruction_list(std::vector<To
             /* Pseudo-instructions */
             else if (t->data == "SETREG") {
                 auto reg = next_reg();
-                auto val = next_int(16);
-                add_instruction((SET_CODE << 8) | (reg << 6) | (3 << 4) | (((val & 0xf000) >> 12) << 0));
-                add_instruction((SET_CODE << 8) | (reg << 6) | (2 << 4) | (((val & 0x0f00) >> 8) << 0));
-                add_instruction((SET_CODE << 8) | (reg << 6) | (1 << 4) | (((val & 0x00f0) >> 4) << 0));
-                add_instruction((SET_CODE << 8) | (reg << 6) | (0 << 4) | (((val & 0x000f) >> 0) << 0));
+
+                t = std::next(t);
+                if (t->type == TokenType::INTEGER) {
+                    auto val = extract_int(*t, 16);
+                    add_instruction((SET_CODE << 8) | (reg << 6) | (3 << 4) | (((val & 0xf000) >> 12) << 0));
+                    add_instruction((SET_CODE << 8) | (reg << 6) | (2 << 4) | (((val & 0x0f00) >> 8) << 0));
+                    add_instruction((SET_CODE << 8) | (reg << 6) | (1 << 4) | (((val & 0x00f0) >> 4) << 0));
+                    add_instruction((SET_CODE << 8) | (reg << 6) | (0 << 4) | (((val & 0x000f) >> 0) << 0));
+                } else if (t->type == TokenType::IDENTIFIER) {
+                    auto label = extract_string(*t);
+                    label_resolver.add_resolver([label, t, reg, pos, &label_resolver, &instructions]() {
+                        auto val = [&]() {
+                            try {
+                                return label_resolver.get_label_position(label);
+                            } catch (std::out_of_range&) {
+                                auto msg = "Could not find label '" + label + "'.";
+                                throw ParserError{msg, *t};
+                            }
+                        }();
+                        instructions[pos + 0] = ((SET_CODE << 8) | (reg << 6) | (3 << 4) | (((val & 0xf000) >> 12) << 0));
+                        instructions[pos + 2] = ((SET_CODE << 8) | (reg << 6) | (2 << 4) | (((val & 0x0f00) >> 8) << 0));
+                        instructions[pos + 4] = ((SET_CODE << 8) | (reg << 6) | (1 << 4) | (((val & 0x00f0) >> 4) << 0));
+                        instructions[pos + 6] = ((SET_CODE << 8) | (reg << 6) | (0 << 4) | (((val & 0x000f) >> 0) << 0));
+                    });
+                    pos += 8;
+                } else {
+                    auto msg = "Expected either INTEGER or a label STRING";
+                    throw ParserError{msg, *t};
+                }
             } else if (t->data == "PUSHALL") {
                 add_instruction((PUSH_CODE << 8) | (0b00 << 0));
                 add_instruction((PUSH_CODE << 8) | (0b01 << 0));
@@ -193,6 +257,9 @@ std::map<Position, Instruction> Parser::generate_instruction_list(std::vector<To
             } else if (t->data == ".data") {
                 instructions[pos] = next_int(16);
                 pos += 2;
+            } else if (t->data == ".label") {
+                auto label = next_string();
+                label_resolver.add_label(label, pos);
             } else {
                 unknown_section_type(*t);
             }
@@ -201,5 +268,7 @@ std::map<Position, Instruction> Parser::generate_instruction_list(std::vector<To
         }
         t = std::next(t);
     }
+    label_resolver.resolve_all_labels();
+
     return instructions;
 }
