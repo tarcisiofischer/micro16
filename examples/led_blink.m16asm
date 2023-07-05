@@ -2,6 +2,7 @@
 /* { */
 // Set Timer 1 Interrupt Table address to 0x1000
 // 0x7d04 is the Timer 1 Interrupt table address
+    SELB 1
     SETREG W0 0x1000
     SETREG W1 0x7d04
     ST W1 W0
