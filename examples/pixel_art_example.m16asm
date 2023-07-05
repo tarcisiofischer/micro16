@@ -1,10 +1,10 @@
 /* main() */
 /* { */
     SETREG W0 0x0000    PUSH W0
-    SETREG W0 0x8000    PUSH W0
+    SETREG W0 img_data  PUSH W0
     SETREG W0 0x7d00    PUSH W0
 
-.code 0x0100
+.label while_0
     SELB 1
     CSP W0 0x4          LD W0 W0
     CSP W1 0x2          LD W1 W1
@@ -20,17 +20,18 @@
     ADD W0 W1 W0
     CSP W2 0x2          ST W2 W0
 
-    SETREG W2 0x0100
+    SETREG W2 while_0
     PEEK W0 0x4
     PEEK W1 0x0
     BRNE W2 W0 W1
 
-.code 0x0200
-    SETREG W0 0x0200
+.label while_1
+    SETREG W0 while_1
     JMP W0
 /* } */
 
 .code 0x8000
+.label img_data
 
 .data 0x6666
 .data 0x11FF

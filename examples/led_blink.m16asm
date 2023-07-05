@@ -1,9 +1,9 @@
 /* main() */
 /* { */
-// Set Timer 1 Interrupt Table address to 0x1000
+// Set Timer 1 Interrupt Table address to timer_interrupt_0
 // 0x7d04 is the Timer 1 Interrupt table address
     SELB 1
-    SETREG W0 0x1000
+    SETREG W0 timer_interrupt_0
     SETREG W1 0x7d04
     ST W1 W0
 
@@ -12,22 +12,22 @@
     EAI
 
 // while true {}
-    SETREG W0 0x0100
-.code 0x0100
+.label while_0
+    SETREG W0 while_0
     JMP W0
 /* } */
 
 /* Timer Interrupt */
 /* { */
-.code 0x1000
+.label timer_interrupt_0
     PUSHALL
-    SETREG W1 0x1080
+    SETREG W1 while_1
 
 // 0x7cfe is the address for the last pixel mapped to the screen
     SETREG W0 0x7cfe
 
 // Loop through all pixels updating the color
-.code 0x1080
+.label while_1
     LD W0 W2
     NOT W2
     ST W0 W2
