@@ -7,7 +7,7 @@
 
 int main(int argc, char** argv)
 {
-    argparse::ArgumentParser arg_parser("micro16");
+    argparse::ArgumentParser arg_parser("micro16_asm");
     arg_parser.add_argument("input_file")
         .help("Micro16 ASM file (.m16asm)");
     arg_parser.add_argument("output_file")
