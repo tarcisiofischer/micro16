@@ -15,19 +15,19 @@ If overflow occurs, register `CR` bit `OV` is set.
 
 `W[cc] = W[aa] - W[bb]`
 
-- #### AND `0000 0011 0000 0000`
+- #### AND `0000 0011 00cc aabb`
 
 Bitwise AND
 
 `W[cc] = W[aa] AND W[bb]`
 
-- #### OR `0000 0100 0000 0000`
+- #### OR `0000 0100 00cc aabb`
 
 Bitwise OR
 
 `W[cc] = W[aa] OR W[bb]`
 
-- #### XOR `0000 0101 0000 0000`
+- #### XOR `0000 0101 00cc aabb`
 
 Bitwise XOR
 
@@ -115,7 +115,7 @@ Same as `RET`, but also sets the `GLE` flag on the `CR` register.
 
 Load contents of memory address given by `W[aa]`, on the bank selected on `BK` into the register `W[bb]`.
 
-```asm
+```
 W[bb] = MEMORY[W[aa]]
 ```
 
@@ -123,7 +123,7 @@ W[bb] = MEMORY[W[aa]]
 
 Store the contents of `W[bb]` in address given by `W[aa]`, on the bank selected on `BK`.
 
-```asm
+```
 MEMORY[W[aa]] = W[bb]
 ```
 
@@ -228,9 +228,9 @@ Pop all registers from stack
 
 Expands to
 ```asm
-PUSH W3
-PUSH W2
-PUSH W1
-PUSH W0
+POP W3
+POP W2
+POP W1
+POP W0
 ```
 

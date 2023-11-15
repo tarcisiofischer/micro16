@@ -72,10 +72,6 @@ Every time it's triggered, the timer interrupt will:
 In order to return from an interrupt, `IRET` may be used, as it will return from the interrupt and re-enable interrupts.
 If reentrancy is wanted, `EAI` must be called explicitly from inside the interrupt routine.
 
-### I/O
-
-TODO
-
 ## Peripherals
 
 - #### Keyboard
@@ -84,21 +80,21 @@ TODO
 
 - #### Video
 
-Micro16 comes with a 320x200 16color screen.
+Micro16 comes with a 320x200 16color (4bit) screen.
 The color map is given:
 
-| Color                                                                                 | Color
-| ---                                                                                   | ---
-| <span style="background-color: #191919; color: white">&nbsp;0000&nbsp;</span>         | <span style="background-color: #ccdb25; color: black">&nbsp;1000&nbsp;</span>
-| <span style="background-color: #cbcbcb; color: black">&nbsp;0001&nbsp;</span>         | <span style="background-color: #ccdb88; color: black">&nbsp;1001&nbsp;</span>
-| <span style="background-color: #ac3232; color: black">&nbsp;0010&nbsp;</span>         | <span style="background-color: #d2842a; color: black">&nbsp;1010&nbsp;</span>
-| <span style="background-color: #ac716b; color: black">&nbsp;0011&nbsp;</span>         | <span style="background-color: #d2ac7a; color: black">&nbsp;1011&nbsp;</span>
-| <span style="background-color: #4fac43; color: black">&nbsp;0100&nbsp;</span>         | <span style="background-color: #824aad; color: black">&nbsp;1100&nbsp;</span>
-| <span style="background-color: #92b687; color: black">&nbsp;0101&nbsp;</span>         | <span style="background-color: #b795c2; color: black">&nbsp;1101&nbsp;</span>
-| <span style="background-color: #5b69ac; color: black">&nbsp;0110&nbsp;</span>         | <span style="background-color: #1f7d6e; color: black">&nbsp;1110&nbsp;</span>
-| <span style="background-color: #acadc8; color: black">&nbsp;0111&nbsp;</span>         | <span style="background-color: #87ccc8; color: black">&nbsp;1111&nbsp;</span>
+| Color                                                                                                              | Color
+|--------------------------------------------------------------------------------------------------------------------| ---
+| <span style="background-color: #191919; color: white">&nbsp;0000&nbsp;</span> <img src="../img/colormap/0000.png"> | <span style="background-color: #ccdb25; color: black">&nbsp;1000&nbsp;</span> <img src="../img/colormap/1000.png">
+| <span style="background-color: #cbcbcb; color: black">&nbsp;0001&nbsp;</span> <img src="../img/colormap/0001.png"> | <span style="background-color: #ccdb88; color: black">&nbsp;1001&nbsp;</span> <img src="../img/colormap/1001.png">
+| <span style="background-color: #ac3232; color: black">&nbsp;0010&nbsp;</span> <img src="../img/colormap/0010.png"> | <span style="background-color: #d2842a; color: black">&nbsp;1010&nbsp;</span> <img src="../img/colormap/1010.png">
+| <span style="background-color: #ac716b; color: black">&nbsp;0011&nbsp;</span> <img src="../img/colormap/0011.png"> | <span style="background-color: #d2ac7a; color: black">&nbsp;1011&nbsp;</span> <img src="../img/colormap/1011.png">
+| <span style="background-color: #4fac43; color: black">&nbsp;0100&nbsp;</span> <img src="../img/colormap/0100.png"> | <span style="background-color: #824aad; color: black">&nbsp;1100&nbsp;</span> <img src="../img/colormap/1100.png">
+| <span style="background-color: #92b687; color: black">&nbsp;0101&nbsp;</span> <img src="../img/colormap/0101.png"> | <span style="background-color: #b795c2; color: black">&nbsp;1101&nbsp;</span> <img src="../img/colormap/1101.png">
+| <span style="background-color: #5b69ac; color: black">&nbsp;0110&nbsp;</span> <img src="../img/colormap/0110.png"> | <span style="background-color: #1f7d6e; color: black">&nbsp;1110&nbsp;</span> <img src="../img/colormap/1110.png">
+| <span style="background-color: #acadc8; color: black">&nbsp;0111&nbsp;</span> <img src="../img/colormap/0111.png"> | <span style="background-color: #87ccc8; color: black">&nbsp;1111&nbsp;</span> <img src="../img/colormap/1111.png">
 
-Each pixel is mapped in memory bank 1 from 0x0000-0x7cff.
+Each pixel is mapped in memory bank 1 from 0x0000-0x7cff. But note that each byte contain 2 pixels, as each pixel is 4 bits long.
 
 - #### Disk
 
