@@ -332,3 +332,49 @@ TEST_CASE("Push/Pop from stack", MICRO16_INSTRUCTIONS_TAG) {
         0x000a
     });
 }
+
+class InspectVideoAdapter : public Micro16::Adapter
+{
+public:
+    void connect_to_memory(Byte* memory_start) { this->video_memory_ptr = memory_start; }
+    bool is_connected() const { return this->video_memory_ptr != nullptr; }
+    void disconnect() { this->video_memory_ptr = nullptr; }
+    Byte get_byte(int index) { return this->video_memory_ptr[index]; }
+
+private:
+    Byte* video_memory_ptr;
+};
+
+TEST_CASE("Set pixel", MICRO16_INSTRUCTIONS_TAG) {
+    auto code = std::array<Byte, BANK_SIZE>{
+/*0x0000*/    SET_CODE,  0b00001111,
+/*0x0002*/    SET_CODE,  0b01000000,
+/*0x0004*/    SPXL_CODE, 0b00000001,
+/*0x0006*/    BRK_CODE,  0b00000000,
+
+/*0x0008*/    SET_CODE,  0b00001010,
+/*0x000a*/    SET_CODE,  0b01000001,
+/*0x000c*/    SPXL_CODE, 0b00000001,
+/*0x000e*/    BRK_CODE,  0b00000000,
+
+/*0x0010*/    HLT_CODE,  0b00000000,
+    };
+
+    Micro16 mcu{code};
+    InspectVideoAdapter adapter;
+    mcu.register_mmio(adapter, Address{0x0000});
+    REQUIRE(adapter.get_byte(0) == 0x00);
+    mcu.set_breakpoint_handler([&]() {
+        auto IP = mcu.get_state().IP;
+        if (IP == 0x0006) {
+            REQUIRE(adapter.get_byte(0) == 0xf0);
+        } else if (IP == 0x000e) {
+            REQUIRE(adapter.get_byte(0) == 0xfa);
+        } else {
+            FAIL("Unhandled breakpoint at " + std::to_string(IP));
+        }
+    });
+    mcu.run();
+    REQUIRE(mcu.get_state().running == false);
+    REQUIRE(mcu.get_state().IP == 0x0012);
+}

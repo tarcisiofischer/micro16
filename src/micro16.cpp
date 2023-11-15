@@ -345,6 +345,18 @@ void Micro16::run_instruction(Instruction const& instruction)
             this->W[aa] = this->SP - xx;
             break;
         }
+        case SPXL_CODE: {
+            auto aa = (instruction_data & 0b00001100) >> 2;
+            auto bb = (instruction_data & 0b00000011) >> 0;
+
+            auto video_byte = this->W[bb] / 2;
+            auto side = (this->W[bb] % 2) & 0b1;
+            auto nibble = this->W[aa] & 0xf;
+            auto offset = side == 0 ? 4 : 0;
+
+            this->memory_banks[0b01][video_byte] |= (nibble << offset);
+            break;
+        }
         case DAI_CODE: {
             this->CR &= ~(0x0008);
             break;

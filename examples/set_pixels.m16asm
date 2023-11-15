@@ -1,0 +1,22 @@
+    SELB 1
+    DAI
+
+    SETREG W0 0x000F
+
+    SETREG W1 0x0000 // First pixel
+    SPXL W0 W1
+    SETREG W1 0x0002
+    SPXL W0 W1
+    SETREG W1 0x7cff // Middle of screen
+    SPXL W0 W1
+    SETREG W1 0xf9fd
+    SPXL W0 W1
+    SETREG W1 0xf9ff // Last pixel
+    SPXL W0 W1
+
+    SETREG W1 0xfa00 // Past last pixel - Currently UB.
+    SPXL W0 W1
+
+.label while_0
+    SETREG W0 while_0
+    JMP W0

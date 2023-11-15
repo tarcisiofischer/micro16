@@ -65,6 +65,7 @@ TEST_CASE("Assembler", MICRO16_ASSEMBLER_TAG) {
     check_next_instruction("POP",  0b01001001, 0b00000000);
     check_next_instruction("PEEK", 0b01001010, 0b00111111);
     check_next_instruction("CSP",  0b01001011, 0b10000010);
+    check_next_instruction("SPXL", 0b01001100, 0b00000001);
 
     /* Control instructions */
     check_next_instruction("DAI",  0b11000000, 0b00000000);

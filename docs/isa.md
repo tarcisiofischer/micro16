@@ -62,7 +62,7 @@ Clear register `W[aa]`
 `W[aa] = ~W[aa]`
 Bitwise NOT operation on register `W[aa]`.
 
-## Branch instructions
+### Branch instructions
 
 - #### JMP `1000 0000 0000 00aa`
 
@@ -109,7 +109,7 @@ SP = SP - 2
 
 Same as `RET`, but also sets the `GLE` flag on the `CR` register.
 
-## Memory instructions
+### Memory instructions
 
 - #### LD W[aa] W[bb] `0100 0001 0000 aabb`
 
@@ -164,6 +164,11 @@ Load the address `SP - 0bxxxxxx` into `W[aa]`:
 ```
 W[aa] = SP - 0bxxxxxx
 ```
+
+- #### SPXL `0100 1100 0000 aabb`
+
+Use the 4 lower bits of `W[aa]` to set the pixel indexed on the video memory addressed by `W[bb]`.
+Note that the video memory is 4-bit addressed, so index are from `0` to `2*last_video_mem_byte`.
 
 ### Control instructions
 

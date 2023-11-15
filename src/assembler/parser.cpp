@@ -185,6 +185,8 @@ std::map<Position, Instruction> Parser::generate_instruction_list(std::vector<To
                 add_instruction((PEEK_CODE << 8) | (next_reg() << 6) | (next_int(6) << 0));
             } else if (t->data == "CSP") {
                 add_instruction((CSP_CODE << 8) | (next_reg() << 6) | (next_int(6) << 0));
+            } else if (t->data == "SPXL") {
+                add_instruction((SPXL_CODE << 8) | (next_reg() << 2) | (next_reg() << 0));
             } else if (t->data == "DAI") {
                 add_instruction((DAI_CODE << 8));
             } else if (t->data == "EAI") {

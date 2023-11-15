@@ -33,6 +33,7 @@ PUSH W0
 POP W0
 PEEK W0 0b111111
 CSP W2 0b000010
+SPXL W0 W1
 
 /* Control instructions */
 DAI
