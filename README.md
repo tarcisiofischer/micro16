@@ -41,6 +41,20 @@ Example:
 ⚠ The art on the example is licensed under CC0 1.0, and the source can be found [here](https://bakudas.itch.io/generic-rpg-pack).
 
 
+#### Brainfuck compiler
+
+There's a [brainfuck compiler](src/brainfuck/README.md) available, capable of translating a program written in the
+brainfuck language to the micro16 assembly:
+
+    $ micro16_bf examples/example.bf out.m16asm
+    $ micro16_asm out.m16asm out.micro16
+    $ micro16 out.micro16
+
+[View .bf file for this example](examples/example.bf)
+
+![example.bf](img/brainfuck_example.png)
+
+
 #### Led blink
 
     $ micro16_asm examples/led_blink.m16asm out.micro16

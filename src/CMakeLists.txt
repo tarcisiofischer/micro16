@@ -31,6 +31,12 @@ set(MICRO16_ASSEMBLER_CLI_FILES
     assembler/main.cpp
 )
 
+set(MICRO16_BRAINFUCK_COMPILER_CLI_FILES
+    brainfuck/compiler.hpp
+    brainfuck/compiler.cpp
+    brainfuck/main.cpp
+)
+
 set(MICRO16_TEST_FILES
     tests/catch.hpp
     tests/catch_extensions.hpp
@@ -71,6 +77,10 @@ add_executable(micro16_asm
 target_link_libraries(micro16_asm
     PUBLIC
     micro16_assembler_lib
+)
+
+add_executable(micro16_bf
+    ${MICRO16_BRAINFUCK_COMPILER_CLI_FILES}
 )
 
 add_executable(micro16_tests
